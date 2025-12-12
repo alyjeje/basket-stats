@@ -1,0 +1,29 @@
+# Flask et serveur web
+Flask==3.0.0
+Flask-CORS==4.0.0
+gunicorn==21.2.0
+Werkzeug==3.0.1
+
+# PostgreSQL
+psycopg2-binary==2.9.9
+
+# Azure Blob Storage
+azure-storage-blob==12.19.0
+azure-identity==1.15.0
+
+# PDF Processing
+pdfplumber==0.10.3
+PyPDF2==3.0.1
+
+# HTTP Requests et cache
+requests==2.31.0
+requests-cache==1.1.1
+
+# Scheduling (pour FFBB cache automatique)
+APScheduler==3.10.4
+
+# Variables d'environnement
+python-dotenv==1.0.0
+
+# Utilitaires
+python-dateutil==2.8.2

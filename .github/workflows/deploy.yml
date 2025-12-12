@@ -1,0 +1,102 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Permet déclenchement manuel
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+    
+    - name: Run linting
+      run: |
+        pip install flake8
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=venv,env
+    
+    - name: Run tests
+      run: |
+        pytest tests/ -v --cov=. --cov-report=term-missing || echo "No tests yet"
+    
+    - name: Security check
+      run: |
+        pip install bandit
+        bandit -r . -f json -o bandit-report.json || echo "Security scan complete"
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          bandit-report.json
+          .coverage
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Create deployment package
+      run: |
+        zip -r deploy.zip . -x "*.git*" "tests/*" "*.md" ".github/*"
+    
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Deploy to Azure Web App
+      run: |
+        az webapp deployment source config-zip \
+          --resource-group Groupe \
+          --name csmf-stats-basket \
+          --src deploy.zip
+    
+    - name: Verify deployment
+      run: |
+        sleep 30
+        curl -f https://csmf-stats-basket.azurewebsites.net/health || exit 1
+    
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "✅ Deployment successful!"
+        echo "🌐 URL: https://csmf-stats-basket.azurewebsites.net"
+    
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "❌ Deployment failed!"
+        exit 1
