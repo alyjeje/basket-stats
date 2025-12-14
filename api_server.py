@@ -15,6 +15,7 @@ import io
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
+print('test')
 # Import du cache FFBB pour le calendrier
 try:
     from ffbb_cache import FFBBCache
