@@ -1424,9 +1424,6 @@
         <div class="mobile-header-spacer"></div>
     </header>
     
-    <!-- Texte coucou affiché sur toutes les pages -->
-    <div style="position: fixed; top: 10px; right: 10px; background: rgba(102, 126, 234, 0.9); color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; z-index: 9999; font-weight: bold;">coucou</div>
-    
     <!-- Overlay pour fermer la sidebar sur mobile -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
     
@@ -1529,6 +1526,51 @@
         // Configuration API
         const API_URL = '/api';
         const CLUB_NAME = 'CSMF';
+        
+        // Fonction pour formater les dates en français
+        function formatDateFrench(dateStr, format = 'short') {
+            if (!dateStr) return '';
+            
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return dateStr; // Si la date n'est pas valide, retourner la chaîne originale
+                
+                const options = {
+                    timeZone: 'Europe/Paris'
+                };
+                
+                if (format === 'long') {
+                    options.weekday = 'long';
+                    options.day = 'numeric';
+                    options.month = 'long';
+                    options.year = 'numeric';
+                    return date.toLocaleDateString('fr-FR', options);
+                } else if (format === 'short') {
+                    options.day = '2-digit';
+                    options.month = '2-digit';
+                    options.year = 'numeric';
+                    return date.toLocaleDateString('fr-FR', options);
+                } else if (format === 'compact') {
+                    options.day = 'numeric';
+                    options.month = 'short';
+                    options.year = 'numeric';
+                    return date.toLocaleDateString('fr-FR', options);
+                }
+                
+                return date.toLocaleDateString('fr-FR');
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+        // Fonction pour formater date + heure
+        function formatDateTimeFrench(dateStr, timeStr) {
+            const formattedDate = formatDateFrench(dateStr, 'short');
+            if (timeStr) {
+                return `${formattedDate} - ${timeStr}`;
+            }
+            return formattedDate;
+        }
         
         // État de l'application
         let allMatches = [];
@@ -1668,7 +1710,8 @@
                             ${m.journee ? `<span class="match-journee">${m.journee}</span>` : ''}
                             <div class="match-info">
                                 <div class="match-teams">${getShortTeamName(m.equipe_domicile)} vs ${getShortTeamName(m.equipe_exterieur)}</div>
-                                <div class="match-score-small">${m.score_domicile} - ${m.score_exterieur} • ${m.date || ''}</div>
+                                <div class="match-score-small">${m.score_domicile} - ${m.score_exterieur}</div>
+                                <div style="font-size: 0.75em; color: #cbd5e1; margin-top: 2px;">📅 ${formatDateFrench(m.date, 'compact')}</div>
                             </div>
                             <span class="match-result-indicator ${resultClass}">${resultText}</span>
                             <button class="match-delete-btn" onclick="deleteMatch(${m.id}, event)" title="Supprimer">🗑</button>
@@ -2256,7 +2299,8 @@
                     <div class="match-badge">${currentMatch.journee || 'Match'}</div>
                     <div class="match-title-info">
                         <h2>${getShortTeamName(currentMatch.equipe_domicile)} vs ${getShortTeamName(currentMatch.equipe_exterieur)}</h2>
-                        <p>${currentMatch.date || ''} • Score: ${currentMatch.score_domicile} - ${currentMatch.score_exterieur}</p>
+                        <p>Score: ${currentMatch.score_domicile} - ${currentMatch.score_exterieur}</p>
+                        <div style="color: #e2e8f0; font-size: 0.9em; margin-top: 5px;">${formatDateFrench(currentMatch.date, 'long')}</div>
                     </div>
                 </div>
             ` : '';
@@ -2346,6 +2390,9 @@
                             <h3>Q4</h3>
                             <div class="quarter-score">${currentMatch.q4_domicile} - ${currentMatch.q4_exterieur}</div>
                         </div>
+                    </div>
+                    <div style="text-align: center; color: #94a3b8; font-size: 0.8em; margin-top: 10px;">
+                        🕐 ${formatDateTimeFrench(currentMatch.date, currentMatch.heure)}
                     </div>
 
                     <h2 style="margin-top: 30px;">🏆 Top 5 Joueuses du Match (par Evaluation)</h2>
@@ -2939,7 +2986,7 @@
                                            value="${m.id}" 
                                            ${selectedMatchesForCsmf.includes(m.id) ? 'checked' : ''}
                                            onchange="toggleMatch(${m.id})">
-                                    ${m.journee ? `[${m.journee}] ` : ''}${getShortTeamName(m.equipe_domicile)} vs ${getShortTeamName(m.equipe_exterieur)} (${m.date})
+                                    ${m.journee ? `[${m.journee}] ` : ''}${getShortTeamName(m.equipe_domicile)} vs ${getShortTeamName(m.equipe_exterieur)} (${formatDateFrench(m.date, 'short')})
                                 </label>
                             `).join('')}
                         </div>
