@@ -1,94 +1,50 @@
 --- FILE: index.html
 --- FILE: index.html
---- FILE: index.html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script>
     <meta charset="UTF-8">
-        // Fonction pour formater les dates en français
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        function formatDateFrench(dateString) {
     <title>🏀 Statistiques Basket CSMF</title>
-            if (!dateString) return '';
     <style>
-            
         * {
-            // Si c'est déjà au bon format, le retourner tel quel
             margin: 0;
-            if (!dateString.includes('GMT') && !dateString.includes(',')) {
             padding: 0;
-                return dateString;
             box-sizing: border-box;
-            }
         }
-            
         
-            try {
         body {
-                const date = new Date(dateString);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                
             background: #1a1a2e;
-                const jours = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
             min-height: 100vh;
-                const mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 
         }
-                             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
         
-                
         /* Layout principal avec sidebar */
-                const jourSemaine = jours[date.getDay()];
         .app-layout {
-                const jour = date.getDate();
             display: flex;
-                const moisNom = mois[date.getMonth()];
             min-height: 100vh;
-                const annee = date.getFullYear();
         }
-                
         
-                // Extraire l'heure si elle est présente dans la chaîne originale
         /* Sidebar */
-                const heureMatch = dateString.match(/(\d{2}:\d{2})/);
         .sidebar {
-                const heure = heureMatch ? ' ' + heureMatch[1] : '';
             width: 280px;
-                
             background: #1e293b;
-                return `${jourSemaine} ${jour} ${moisNom} ${annee}${heure}`;
             border-right: 1px solid rgba(255,255,255,0.15);
-            } catch (e) {
             display: flex;
-                // En cas d'erreur, retourner la chaîne originale nettoyée
             flex-direction: column;
-                return dateString.replace(/\s+\d{2}:\d{2}:\d{2}\s+GMT/g, '').trim();
             position: fixed;
-            }
             height: 100vh;
-        }
             overflow-y: auto;
-        
             z-index: 100;
-        // Fonction pour nettoyer les dates dans le DOM après rendu
         }
-        function cleanDatesInDOM() {
         
-            // Nettoyer toutes les dates affichées
         .sidebar-header {
-            document.querySelectorAll('*').forEach(el => {
             padding: 25px 20px;
-                if (el.textContent && el.textContent.includes('GMT') && el.children.length === 0) {
             border-bottom: 1px solid rgba(255,255,255,0.15);
-                    el.textContent = formatDateFrench(el.textContent);
             text-align: center;
-                }
         }
-            });
         
-        }
         .sidebar-header h1 {
-    </script>
             color: #fff;
             font-size: 1.4em;
             margin-bottom: 5px;
