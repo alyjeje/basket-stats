@@ -2545,7 +2545,7 @@
         // Rendu des combinaisons pour une équipe
         function renderLineupsForTeam(teamName, lineups) {
             // Trier par écart (meilleur en premier)
-            const sortedLineups = [...lineups].sort((a, b) => b.ecart - a.ecart);
+            const sortedLineups = [...lineups].sort((a, b) => (b.ecart || 0) - (a.ecart || 0));
             
             // Calculer les stats globales
             const totalTime = lineups.reduce((sum, l) => sum + (l.temps_secondes || 0), 0);
@@ -2556,6 +2556,10 @@
                 <div class="lineup-section">
                     <div class="team-header" style="margin-bottom: 20px;">
                         ${teamName} - ${lineups.length} combinaisons utilisées
+                    </div>
+                    
+                    <div class="message" style="background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9em;">
+                        ℹ️ Certaines données peuvent être incomplètes selon la qualité du fichier PDF source.
                     </div>
                     
                     <!-- Résumé -->
@@ -2599,19 +2603,25 @@
             
             // Parser les joueurs depuis le format "1- NOM P/ 4- NOM C/ ..."
             const playersRaw = lineup.joueurs || '';
-            const playersList = playersRaw.split('/').filter(p => p.trim()).map(p => {
+            const playersList = playersRaw.split('/').filter(p => p.trim()).map((p, index) => {
                 const match = p.trim().match(/(\d+)-\s*([A-Z]+)/i);
-                return match ? `#${match[1]} ${match[2]}` : p.trim();
+                if (match && match[2]) {
+                    return `#${match[1]} ${match[2]}`;
+                } else if (p.trim()) {
+                    return p.trim();
+                } else {
+                    return `<span class="player-name-fallback">👤 Joueuse #${index + 1}</span>`;
+                }
             });
             
             return `
                 <div class="lineup-card ${ecartClass}" data-ecart="${lineup.ecart}">
                     <div class="lineup-header">
-                        <div class="lineup-ecart ${ecartClass}">${ecartSign}${lineup.ecart}</div>
+                        <div class="lineup-ecart ${ecartClass}">${ecartSign}${lineup.ecart !== undefined ? lineup.ecart : '<span class="stat-unavailable">--</span>'}</div>
                         <div class="lineup-meta">
-                            <span>⏱️ ${lineup.temps_jeu || '-'}</span>
-                            <span>📊 ${lineup.score_pour || 0}-${lineup.score_contre || 0}</span>
-                            <span>⚡ ${(lineup.pts_par_minute || 0).toFixed(1)} pts/min</span>
+                            <span>⏱️ ${lineup.temps_jeu || '<span class="stat-unavailable">--</span>'}</span>
+                            <span>📊 ${lineup.score_pour !== undefined ? lineup.score_pour : '<span class="stat-unavailable">--</span>'}-${lineup.score_contre !== undefined ? lineup.score_contre : '<span class="stat-unavailable">--</span>'}</span>
+                            <span>⚡ ${lineup.pts_par_minute !== undefined ? lineup.pts_par_minute.toFixed(1) : '<span class="stat-unavailable">--</span>'} pts/min</span>
                         </div>
                     </div>
                     
@@ -2621,19 +2631,19 @@
                     
                     <div class="lineup-stats">
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.rebonds || 0}</div>
+                            <div class="lineup-stat-value">${lineup.rebonds !== undefined ? lineup.rebonds : '<span class="stat-unavailable">--</span>'}</div>
                             <div class="lineup-stat-label">Rebonds</div>
                         </div>
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.passes_decisives || 0}</div>
+                            <div class="lineup-stat-value">${lineup.passes_decisives !== undefined ? lineup.passes_decisives : '<span class="stat-unavailable">--</span>'}</div>
                             <div class="lineup-stat-label">Passes</div>
                         </div>
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.interceptions || 0}</div>
+                            <div class="lineup-stat-value">${lineup.interceptions !== undefined ? lineup.interceptions : '<span class="stat-unavailable">--</span>'}</div>
                             <div class="lineup-stat-label">Interceptions</div>
                         </div>
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.balles_perdues || 0}</div>
+                            <div class="lineup-stat-value">${lineup.balles_perdues !== undefined ? lineup.balles_perdues : '<span class="stat-unavailable">--</span>'}</div>
                             <div class="lineup-stat-label">Balles perdues</div>
                         </div>
                     </div>
@@ -2884,9 +2894,15 @@
                 const ecartMoyen = parseFloat(lineup.ecart_moyen);
                 
                 // Extraire les noms courts des joueuses
-                const players = lineup.joueurs.split('/').map(p => {
+                const players = (lineup.joueurs || '').split('/').map((p, index) => {
                     const match = p.trim().match(/(\d+)-\s*([A-Z]+)/i);
-                    return match ? match[2] : p.trim();
+                    if (match && match[2]) {
+                        return match[2];
+                    } else if (p.trim()) {
+                        return p.trim();
+                    } else {
+                        return `Joueuse #${index + 1}`;
+                    }
                 }).filter(p => p).join(' • ');
                 
                 return `
