@@ -3379,7 +3379,12 @@
             };
 
             return `
-                <h2 style="margin-top: 30px;">Statistiques Détaillées des Joueuses CSMF</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; margin-bottom: 15px;">
+                    <h2 style="margin: 0;">Statistiques Détaillées des Joueuses CSMF</h2>
+                    <button class="btn btn-primary" onclick="exportCsmfToExcel()" style="display: flex; align-items: center; gap: 8px;">
+                        📊 Exporter Excel
+                    </button>
+                </div>
                 <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">💡 Cliquez sur les en-têtes de colonnes pour trier</p>
                 <div class="scroll-table">
                     <table id="csmf-stats-table">
