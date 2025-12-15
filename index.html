@@ -1,5 +1,3 @@
---- FILE: index.html
---- FILE: index.html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1639,11 +1637,11 @@
             
             if (result.success) {
                 allMatches = result.data;
-                // Trier par journée (J1, J2, J3...)
+                // Trier par journée (J10, J9, J8... - la plus récente en haut)
                 allMatches.sort((a, b) => {
-                    const jA = a.journee ? parseInt(a.journee.replace('J', '')) : 999;
-                    const jB = b.journee ? parseInt(b.journee.replace('J', '')) : 999;
-                    return jA - jB;
+                    const jA = a.journee ? parseInt(a.journee.replace('J', '')) : 0;
+                    const jB = b.journee ? parseInt(b.journee.replace('J', '')) : 0;
+                    return jB - jA; // Descendant: plus grande journée en premier
                 });
                 selectedMatchesForCsmf = allMatches.map(m => m.id); // Tous sélectionnés par défaut
                 renderSidebar();
@@ -2544,13 +2542,19 @@
         
         // Rendu des combinaisons pour une équipe
         function renderLineupsForTeam(teamName, lineups) {
+            // Helper pour obtenir l'écart (compatible avec les deux formats)
+            const getEcart = (l) => l.plus_minus ?? l.ecart ?? 0;
+            const getDuree = (l) => l.duree_secondes ?? l.temps_secondes ?? 0;
+            
             // Trier par écart (meilleur en premier)
-            const sortedLineups = [...lineups].sort((a, b) => (b.ecart || 0) - (a.ecart || 0));
+            const sortedLineups = [...lineups].sort((a, b) => getEcart(b) - getEcart(a));
             
             // Calculer les stats globales
-            const totalTime = lineups.reduce((sum, l) => sum + (l.temps_secondes || 0), 0);
+            const totalTime = lineups.reduce((sum, l) => sum + getDuree(l), 0);
             const bestLineup = sortedLineups[0];
             const worstLineup = sortedLineups[sortedLineups.length - 1];
+            const bestEcart = bestLineup ? getEcart(bestLineup) : 0;
+            const worstEcart = worstLineup ? getEcart(worstLineup) : 0;
             
             return `
                 <div class="lineup-section">
@@ -2569,11 +2573,11 @@
                             <div class="advanced-stat-label">Combinaisons</div>
                         </div>
                         <div class="advanced-stat-card">
-                            <div class="advanced-stat-value" style="color: #4ade80;">${bestLineup ? (bestLineup.ecart > 0 ? '+' : '') + bestLineup.ecart : '-'}</div>
+                            <div class="advanced-stat-value" style="color: #4ade80;">${bestLineup ? (bestEcart > 0 ? '+' : '') + bestEcart : '-'}</div>
                             <div class="advanced-stat-label">Meilleur écart</div>
                         </div>
                         <div class="advanced-stat-card">
-                            <div class="advanced-stat-value" style="color: #f87171;">${worstLineup ? (worstLineup.ecart > 0 ? '+' : '') + worstLineup.ecart : '-'}</div>
+                            <div class="advanced-stat-value" style="color: #f87171;">${worstLineup ? (worstEcart > 0 ? '+' : '') + worstEcart : '-'}</div>
                             <div class="advanced-stat-label">Pire écart</div>
                         </div>
                         <div class="advanced-stat-card">
@@ -2598,8 +2602,22 @@
         
         // Carte d'une combinaison
         function renderLineupCard(lineup) {
-            const ecartClass = lineup.ecart > 0 ? 'positive' : (lineup.ecart < 0 ? 'negative' : 'neutral');
-            const ecartSign = lineup.ecart > 0 ? '+' : '';
+            // Mapper les champs de la base de données vers les noms attendus
+            const ecart = lineup.plus_minus ?? lineup.ecart ?? 0;
+            const dureeSecondes = lineup.duree_secondes ?? lineup.temps_secondes ?? 0;
+            const scorePour = lineup.points_marques ?? lineup.score_pour ?? 0;
+            const scoreContre = lineup.points_encaisses ?? lineup.score_contre ?? 0;
+            
+            // Calculer le temps de jeu formaté
+            const minutes = Math.floor(dureeSecondes / 60);
+            const secondes = dureeSecondes % 60;
+            const tempsJeu = dureeSecondes > 0 ? `${minutes}:${String(secondes).padStart(2, '0')}` : null;
+            
+            // Calculer pts/min
+            const ptsParMinute = dureeSecondes > 0 ? (scorePour / (dureeSecondes / 60)) : null;
+            
+            const ecartClass = ecart > 0 ? 'positive' : (ecart < 0 ? 'negative' : 'neutral');
+            const ecartSign = ecart > 0 ? '+' : '';
             
             // Parser les joueurs depuis le format "1- NOM P/ 4- NOM C/ ..."
             const playersRaw = lineup.joueurs || '';
@@ -2615,13 +2633,13 @@
             });
             
             return `
-                <div class="lineup-card ${ecartClass}" data-ecart="${lineup.ecart}">
+                <div class="lineup-card ${ecartClass}" data-ecart="${ecart}">
                     <div class="lineup-header">
-                        <div class="lineup-ecart ${ecartClass}">${ecartSign}${lineup.ecart !== undefined ? lineup.ecart : '<span class="stat-unavailable">--</span>'}</div>
+                        <div class="lineup-ecart ${ecartClass}">${ecartSign}${ecart}</div>
                         <div class="lineup-meta">
-                            <span>⏱️ ${lineup.temps_jeu || '<span class="stat-unavailable">--</span>'}</span>
-                            <span>📊 ${lineup.score_pour !== undefined ? lineup.score_pour : '<span class="stat-unavailable">--</span>'}-${lineup.score_contre !== undefined ? lineup.score_contre : '<span class="stat-unavailable">--</span>'}</span>
-                            <span>⚡ ${lineup.pts_par_minute !== undefined ? lineup.pts_par_minute.toFixed(1) : '<span class="stat-unavailable">--</span>'} pts/min</span>
+                            <span>⏱️ ${tempsJeu || '--'}</span>
+                            <span>📊 ${scorePour}-${scoreContre}</span>
+                            <span>⚡ ${ptsParMinute !== null ? ptsParMinute.toFixed(1) : '--'} pts/min</span>
                         </div>
                     </div>
                     
@@ -2631,20 +2649,20 @@
                     
                     <div class="lineup-stats">
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.rebonds !== undefined ? lineup.rebonds : '<span class="stat-unavailable">--</span>'}</div>
-                            <div class="lineup-stat-label">Rebonds</div>
+                            <div class="lineup-stat-value">${scorePour}</div>
+                            <div class="lineup-stat-label">Points marqués</div>
                         </div>
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.passes_decisives !== undefined ? lineup.passes_decisives : '<span class="stat-unavailable">--</span>'}</div>
-                            <div class="lineup-stat-label">Passes</div>
+                            <div class="lineup-stat-value">${scoreContre}</div>
+                            <div class="lineup-stat-label">Points encaissés</div>
                         </div>
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.interceptions !== undefined ? lineup.interceptions : '<span class="stat-unavailable">--</span>'}</div>
-                            <div class="lineup-stat-label">Interceptions</div>
+                            <div class="lineup-stat-value">${tempsJeu || '--'}</div>
+                            <div class="lineup-stat-label">Temps de jeu</div>
                         </div>
                         <div class="lineup-stat">
-                            <div class="lineup-stat-value">${lineup.balles_perdues !== undefined ? lineup.balles_perdues : '<span class="stat-unavailable">--</span>'}</div>
-                            <div class="lineup-stat-label">Balles perdues</div>
+                            <div class="lineup-stat-value">${ptsParMinute !== null ? ptsParMinute.toFixed(1) : '--'}</div>
+                            <div class="lineup-stat-label">Pts/min</div>
                         </div>
                     </div>
                 </div>
@@ -2849,10 +2867,11 @@
                         count: 0
                     };
                 }
-                lineupAggregates[key].total_temps_secondes += l.temps_secondes || 0;
-                lineupAggregates[key].total_score_pour += l.score_pour || 0;
-                lineupAggregates[key].total_score_contre += l.score_contre || 0;
-                lineupAggregates[key].total_ecart += l.ecart || 0;
+                // Compatibilité avec les deux formats de noms de champs
+                lineupAggregates[key].total_temps_secondes += l.duree_secondes ?? l.temps_secondes ?? 0;
+                lineupAggregates[key].total_score_pour += l.points_marques ?? l.score_pour ?? 0;
+                lineupAggregates[key].total_score_contre += l.points_encaisses ?? l.score_contre ?? 0;
+                lineupAggregates[key].total_ecart += l.plus_minus ?? l.ecart ?? 0;
                 lineupAggregates[key].matchs.push(l.adversaire || 'Match');
                 lineupAggregates[key].count++;
             });
@@ -4418,9 +4437,10 @@
                         count: 0
                     };
                 }
-                lineupAggregates[key].total_temps_secondes += l.temps_secondes || 0;
-                lineupAggregates[key].total_ecart += l.ecart || 0;
-                lineupAggregates[key].total_score_pour += l.score_pour || 0;
+                // Compatibilité avec les deux formats de noms de champs
+                lineupAggregates[key].total_temps_secondes += l.duree_secondes ?? l.temps_secondes ?? 0;
+                lineupAggregates[key].total_ecart += l.plus_minus ?? l.ecart ?? 0;
+                lineupAggregates[key].total_score_pour += l.points_marques ?? l.score_pour ?? 0;
                 lineupAggregates[key].matchs.push(l.adversaire || 'Match');
                 lineupAggregates[key].count++;
             });
