@@ -746,6 +746,130 @@ def get_calendar_info():
             'error': str(e)
         }), 500
 
+@app.route('/api/export/csmf-stats', methods=['POST'])
+def export_csmf_stats():
+    """Exporte les statistiques CSMF au format Excel"""
+    try:
+        # Récupérer les données depuis le body de la requête
+        data = request.get_json()
+        if not data or 'players' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Données des joueuses manquantes'
+            }), 400
+        
+        players_data = data['players']
+        selected_matches = data.get('selected_matches', [])
+        
+        # Créer un nouveau workbook Excel
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Statistiques CSMF"
+        
+        # Styles
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="1E40AF", end_color="1E40AF", fill_type="solid")
+        center_alignment = Alignment(horizontal="center")
+        
+        # En-têtes
+        headers = [
+            "Joueuse", "Matchs", "EVAL Moy", "PTS Moy", "Tirs", "% Tirs", 
+            "% 2pts", "% 3pts", "% LF", "REB Moy", "RO Moy", "RD Moy", 
+            "PD Moy", "BP Moy", "INT Moy", "CTR Moy", "F Moy", "FP Moy", "+/- Moy"
+        ]
+        
+        # Écrire les en-têtes
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = center_alignment
+        
+        # Écrire les données des joueuses
+        for row, player in enumerate(players_data, 2):
+            matchs = player.get('matchs', 1)
+            
+            # Calculer les pourcentages
+            pct_tirs = 0
+            if player.get('tirs_tentes', 0) > 0:
+                pct_tirs = round((player.get('tirs_reussis', 0) / player.get('tirs_tentes', 0)) * 100, 1)
+            
+            pct_2pts = 0
+            if player.get('tirs_2pts_tentes', 0) > 0:
+                pct_2pts = round((player.get('tirs_2pts_reussis', 0) / player.get('tirs_2pts_tentes', 0)) * 100, 1)
+            
+            pct_3pts = 0
+            if player.get('tirs_3pts_tentes', 0) > 0:
+                pct_3pts = round((player.get('tirs_3pts_reussis', 0) / player.get('tirs_3pts_tentes', 0)) * 100, 1)
+            
+            pct_lf = 0
+            if player.get('lf_tentes', 0) > 0:
+                pct_lf = round((player.get('lf_reussis', 0) / player.get('lf_tentes', 0)) * 100, 1)
+            
+            # Données de la ligne
+            row_data = [
+                player.get('nom', ''),
+                matchs,
+                round(player.get('evaluation', 0) / matchs, 1),
+                round(player.get('points', 0) / matchs, 1),
+                f"{player.get('tirs_reussis', 0)}/{player.get('tirs_tentes', 0)}",
+                pct_tirs,
+                pct_2pts,
+                pct_3pts,
+                pct_lf,
+                round(player.get('rebonds', 0) / matchs, 1),
+                round(player.get('rebonds_off', 0) / matchs, 1),
+                round(player.get('rebonds_def', 0) / matchs, 1),
+                round(player.get('passes', 0) / matchs, 1),
+                round(player.get('balles_perdues', 0) / matchs, 1),
+                round(player.get('interceptions', 0) / matchs, 1),
+                round(player.get('contres', 0) / matchs, 1),
+                round(player.get('fautes', 0) / matchs, 1),
+                round(player.get('fautes_provoquees', 0) / matchs, 1),
+                round(player.get('plus_moins', 0) / matchs, 1)
+            ]
+            
+            # Écrire la ligne
+            for col, value in enumerate(row_data, 1):
+                cell = ws.cell(row=row, column=col, value=value)
+                if col > 2:  # Centrer les colonnes numériques
+                    cell.alignment = center_alignment
+        
+        # Ajuster la largeur des colonnes
+        column_widths = [20, 8, 10, 10, 12, 8, 8, 8, 8, 10, 8, 8, 8, 8, 8, 8, 8, 8, 10]
+        for col, width in enumerate(column_widths, 1):
+            ws.column_dimensions[get_column_letter(col)].width = width
+        
+        # Ajouter des informations sur l'export
+        info_row = len(players_data) + 3
+        ws.cell(row=info_row, column=1, value=f"Export généré le: {datetime.now().strftime('%d/%m/%Y à %H:%M')}")
+        ws.cell(row=info_row + 1, column=1, value=f"Nombre de matchs sélectionnés: {len(selected_matches)}")
+        ws.cell(row=info_row + 2, column=1, value=f"Nombre de joueuses: {len(players_data)}")
+        
+        # Sauvegarder dans un buffer
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        # Nom du fichier avec la date
+        filename = f"statistiques_CSMF_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de l'export Excel: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 if __name__ == '__main__':
     print("\n" + "="*60)
     print("🏀 API CSMF Basketball Stats - Version PostgreSQL + Blob Storage")
