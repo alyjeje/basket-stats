@@ -1601,7 +1601,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf', ou 'autres'
+        let currentView = 'accueil'; // 'accueil', 'csmf', 'matches', ou 'autres'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1673,11 +1673,8 @@
                 });
                 selectedMatchesForCsmf = allMatches.map(m => m.id); // Tous sélectionnés par défaut
                 renderSidebar();
-                if (allMatches.length > 0) {
-                    await loadMatch(allMatches[0].id);
-                } else {
-                    render();
-                }
+                // Toujours afficher la page d'accueil par défaut
+                render();
             } else {
                 throw new Error(result.error);
             }
@@ -1693,13 +1690,17 @@
 
             // Navigation principale
             const navHtml = `
-                <button class="nav-btn ${currentView === 'matches' ? 'active' : ''}" onclick="setView('matches'); closeSidebar();">
-                    <span class="nav-btn-icon">📊</span>
-                    <span>Analyse Match</span>
+                <button class="nav-btn ${currentView === 'accueil' ? 'active' : ''}" onclick="setView('accueil'); closeSidebar();">
+                    <span class="nav-btn-icon">🏠</span>
+                    <span>Accueil</span>
                 </button>
                 <button class="nav-btn ${currentView === 'csmf' ? 'active' : ''}" onclick="setView('csmf'); closeSidebar();">
                     <span class="nav-btn-icon">🏆</span>
                     <span>Stats CSMF</span>
+                </button>
+                <button class="nav-btn ${currentView === 'matches' ? 'active' : ''}" onclick="setView('matches'); closeSidebar();">
+                    <span class="nav-btn-icon">📊</span>
+                    <span>Analyse Match</span>
                 </button>
                 <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
                     <span class="nav-btn-icon">👥</span>
@@ -2240,6 +2241,105 @@
             `;
         }
 
+        // Vue d'accueil
+        function renderAccueilView() {
+            return `
+                <div class="card">
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 4em; margin-bottom: 20px;">🏀</div>
+                        <h1 style="color: #1a202c; font-size: 2.5em; margin-bottom: 15px; border: none;">Bienvenue sur CSMF Stats</h1>
+                        <p style="color: #64748b; font-size: 1.2em; margin-bottom: 40px;">Plateforme d'analyse des performances basket du CSMF Paris</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px;">
+                    <div class="card" style="cursor: pointer; transition: transform 0.3s;" onclick="setView('csmf')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 3em; margin-bottom: 15px;">🏆</div>
+                            <h2 style="color: #1a202c; margin-bottom: 15px; border: none;">Stats CSMF</h2>
+                            <p style="color: #64748b; margin-bottom: 20px;">Analyse globale des performances de l'équipe CSMF sur plusieurs matchs</p>
+                            <ul style="text-align: left; color: #64748b; font-size: 0.9em; line-height: 1.6;">
+                                <li>📊 Statistiques moyennes par joueuse</li>
+                                <li>🎯 Pourcentages de réussite aux tirs</li>
+                                <li>🏀 Meilleures combinaisons de 5</li>
+                                <li>🤖 Analyse IA globale</li>
+                                <li>📈 Évolution des performances</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card" style="cursor: pointer; transition: transform 0.3s;" onclick="setView('matches')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 3em; margin-bottom: 15px;">📊</div>
+                            <h2 style="color: #1a202c; margin-bottom: 15px; border: none;">Analyse Match</h2>
+                            <p style="color: #64748b; margin-bottom: 20px;">Analyse détaillée d'un match spécifique avec toutes les statistiques</p>
+                            <ul style="text-align: left; color: #64748b; font-size: 0.9em; line-height: 1.6;">
+                                <li>⚽ Score et résultat du match</li>
+                                <li>👥 Stats individuelles par équipe</li>
+                                <li>🏀 Combinaisons de 5 joueurs</li>
+                                <li>🤖 Conseils IA tactiques</li>
+                                <li>📈 Graphiques de performance</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="card" style="cursor: pointer; transition: transform 0.3s;" onclick="setView('autres')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div style="text-align: center; padding: 20px;">
+                            <div style="font-size: 3em; margin-bottom: 15px;">👥</div>
+                            <h2 style="color: #1a202c; margin-bottom: 15px; border: none;">Autres Équipes</h2>
+                            <p style="color: #64748b; margin-bottom: 20px;">Analyse des équipes adverses pour préparer les prochains matchs</p>
+                            <ul style="text-align: left; color: #64748b; font-size: 0.9em; line-height: 1.6;">
+                                <li>📋 Import de matchs sans CSMF</li>
+                                <li>🎯 Sélection d'équipe à analyser</li>
+                                <li>📊 Stats des joueuses adverses</li>
+                                <li>🔍 Filtrage par adversaire</li>
+                                <li>📈 Tendances et faiblesses</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>🚀 Comment commencer ?</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #667eea;">
+                            <h3 style="color: #667eea; margin-bottom: 10px;">1. Importer des matchs</h3>
+                            <p style="color: #64748b; font-size: 0.9em;">Cliquez sur le bouton "Importer un match" dans la sidebar pour ajouter vos fichiers PDF de la fédération.</p>
+                        </div>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #10b981;">
+                            <h3 style="color: #10b981; margin-bottom: 10px;">2. Analyser CSMF</h3>
+                            <p style="color: #64748b; font-size: 0.9em;">Accédez aux "Stats CSMF" pour voir les performances globales de votre équipe.</p>
+                        </div>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #f59e0b;">
+                            <h3 style="color: #f59e0b; margin-bottom: 10px;">3. Détailler un match</h3>
+                            <p style="color: #64748b; font-size: 0.9em;">Sélectionnez un match dans la liste pour une analyse détaillée avec l'IA.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📁 Types de fichiers supportés</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                        <div style="background: #dcfce7; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">📄</div>
+                            <h4 style="color: #166534; margin-bottom: 8px;">FIBA Box Score</h4>
+                            <p style="color: #15803d; font-size: 0.85em;">Obligatoire - Stats de base</p>
+                        </div>
+                        <div style="background: #dbeafe; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">📊</div>
+                            <h4 style="color: #1d4ed8; margin-bottom: 8px;">Boxscore Détaillée</h4>
+                            <p style="color: #2563eb; font-size: 0.85em;">Optionnel - Stats avancées</p>
+                        </div>
+                        <div style="background: #fef3c7; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">🏀</div>
+                            <h4 style="color: #92400e; margin-bottom: 8px;">Analyse des 5</h4>
+                            <p style="color: #a16207; font-size: 0.85em;">Optionnel - Combinaisons</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Changer de vue principale
         async function switchView(view) {
             currentView = view;
@@ -2277,7 +2377,9 @@
             renderSidebar();
 
             let contentView = '';
-            if (currentView === 'matches') {
+            if (currentView === 'accueil') {
+                contentView = renderAccueilView();
+            } else if (currentView === 'matches') {
                 contentView = renderMatchesView();
             } else if (currentView === 'csmf') {
                 contentView = renderCsmfViewContent();
