@@ -1577,7 +1577,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf', ou 'autres'
+        let currentView = 'accueil'; // 'accueil', 'matches', 'csmf', ou 'autres'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1667,13 +1667,17 @@
 
             // Navigation principale
             const navHtml = `
-                <button class="nav-btn ${currentView === 'matches' ? 'active' : ''}" onclick="setView('matches'); closeSidebar();">
-                    <span class="nav-btn-icon">📊</span>
-                    <span>Analyse Match</span>
+                <button class="nav-btn ${currentView === 'accueil' ? 'active' : ''}" onclick="setView('accueil'); closeSidebar();">
+                    <span class="nav-btn-icon">🏠</span>
+                    <span>Accueil</span>
                 </button>
                 <button class="nav-btn ${currentView === 'csmf' ? 'active' : ''}" onclick="setView('csmf'); closeSidebar();">
                     <span class="nav-btn-icon">🏆</span>
                     <span>Stats CSMF</span>
+                </button>
+                <button class="nav-btn ${currentView === 'matches' ? 'active' : ''}" onclick="setView('matches'); closeSidebar();">
+                    <span class="nav-btn-icon">📊</span>
+                    <span>Analyse Match</span>
                 </button>
                 <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
                     <span class="nav-btn-icon">👥</span>
@@ -2226,6 +2230,8 @@
             } else if (view === 'matches') {
                 // Charger automatiquement le dernier match
                 await loadLatestMatch();
+            } else if (view === 'accueil') {
+                // Page d'accueil - pas de chargement spécial
             }
             render();
         }
@@ -2269,7 +2275,9 @@
             renderSidebar();
 
             let contentView = '';
-            if (currentView === 'matches') {
+            if (currentView === 'accueil') {
+                contentView = renderAccueilView();
+            } else if (currentView === 'matches') {
                 contentView = renderMatchesView();
             } else if (currentView === 'csmf') {
                 contentView = renderCsmfViewContent();
@@ -2288,6 +2296,88 @@
             return ''; // La navigation est maintenant dans la sidebar
         }
 
+        // Vue d'accueil
+        function renderAccueilView() {
+            return `
+                <div class="card" style="text-align: center; padding: 40px;">
+                    <div style="font-size: 4em; margin-bottom: 20px;">🏀</div>
+                    <h1 style="color: #1e40af; font-size: 2.5em; margin-bottom: 15px; border: none;">Bienvenue sur CSMF Stats</h1>
+                    <p style="color: #64748b; font-size: 1.2em; margin-bottom: 40px;">Plateforme d'analyse des performances basket du CSMF Paris</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; text-align: left;">
+                        
+                        <div class="card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border: none;">
+                            <div style="font-size: 2.5em; margin-bottom: 15px;">🏆</div>
+                            <h3 style="color: white; margin-bottom: 15px; border: none;">Stats CSMF</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Analysez les performances globales de l'équipe CSMF sur plusieurs matchs :</p>
+                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px;">
+                                <li>Statistiques cumulées des joueuses</li>
+                                <li>Moyennes par match et pourcentages</li>
+                                <li>Meilleures combinaisons de 5</li>
+                                <li>Analyse IA avec conseils tactiques</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; padding: 30px; border: none;">
+                            <div style="font-size: 2.5em; margin-bottom: 15px;">📊</div>
+                            <h3 style="color: white; margin-bottom: 15px; border: none;">Analyse Match</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Étudiez en détail chaque match individuellement :</p>
+                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px;">
+                                <li>Vue d'ensemble du match et score</li>
+                                <li>Statistiques par joueuse et équipe</li>
+                                <li>Combinaisons de 5 utilisées</li>
+                                <li>Analyse IA spécifique au match</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="card" style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; padding: 30px; border: none;">
+                            <div style="font-size: 2.5em; margin-bottom: 15px;">👥</div>
+                            <h3 style="color: white; margin-bottom: 15px; border: none;">Autres Équipes</h3>
+                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Analysez les équipes adverses pour mieux les connaître :</p>
+                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px;">
+                                <li>Import de matchs sans le CSMF</li>
+                                <li>Statistiques des équipes adverses</li>
+                                <li>Profils des joueuses adverses</li>
+                                <li>Préparation tactique</li>
+                            </ul>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="card" style="margin-top: 40px; background: #f8fafc; border: 2px solid #e2e8f0; padding: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 20px; border: none;">🚀 Comment commencer ?</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
+                            <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                <div style="background: #1e40af; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
+                                <div>
+                                    <h4 style="color: #1e40af; margin: 0 0 8px 0;">Importez vos matchs</h4>
+                                    <p style="color: #64748b; margin: 0; font-size: 0.9em;">Cliquez sur "Importer un match" et uploadez les fichiers PDF de la fédération</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                <div style="background: #1e40af; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
+                                <div>
+                                    <h4 style="color: #1e40af; margin: 0 0 8px 0;">Explorez les statistiques</h4>
+                                    <p style="color: #64748b; margin: 0; font-size: 0.9em;">Naviguez entre les différents menus pour analyser les performances</p>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: flex-start; gap: 15px;">
+                                <div style="background: #1e40af; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
+                                <div>
+                                    <h4 style="color: #1e40af; margin: 0 0 8px 0;">Utilisez l'IA</h4>
+                                    <p style="color: #64748b; margin: 0; font-size: 0.9em;">Profitez des analyses automatiques et conseils tactiques générés par l'IA</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: #eff6ff; border-radius: 15px; border: 1px solid #bae6fd;">
+                        <p style="color: #0369a1; margin: 0; font-size: 0.9em;">💡 <strong>Astuce :</strong> Pour une analyse complète, importez les 3 fichiers PDF : FIBA Box Score (obligatoire), Boxscore Détaillée et Analyse des 5 en jeu (optionnels)</p>
+                    </div>
+                </div>
+            `;
+        }
+        
         // Vue des matchs (ancienne interface)
         function renderMatchesView() {
             if (!currentMatch) {
