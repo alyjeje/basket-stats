@@ -1506,6 +1506,69 @@
                 </div>
             </div>
 
+            <!-- Modal PERO -->
+            <div id="peroModal" class="upload-modal" style="display: none;">
+                <div class="upload-modal-content" style="max-width: 800px;">
+                    <div class="upload-modal-header">
+                        <h3>💰 Plan Épargne Retraite Obligatoire (PERO)</h3>
+                        <button class="modal-close" onclick="closePeroModal()">✕</button>
+                    </div>
+                    <div class="upload-modal-body" style="line-height: 1.6;">
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
+                            <p style="margin: 0; color: #1565c0; font-weight: 600;">ℹ️ Le PERO est un dispositif d'épargne retraite mis en place par la loi PACTE de 2019.</p>
+                        </div>
+
+                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">🎯 Qu'est-ce que le PERO ?</h4>
+                        <p>Le Plan Épargne Retraite Obligatoire (PERO) est un produit d'épargne retraite qui remplace les anciens dispositifs (PERP, Madelin, etc.). Il permet de constituer un complément de retraite tout en bénéficiant d'avantages fiscaux.</p>
+
+                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">💡 Les 3 compartiments du PERO</h4>
+                        <div style="display: grid; gap: 15px; margin-bottom: 20px;">
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
+                                <strong style="color: #047857;">1. PERO Individuel</strong><br>
+                                <small style="color: #64748b;">Souscription volontaire, versements libres, déductibles des revenus imposables</small>
+                            </div>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                <strong style="color: #d97706;">2. PERO Collectif</strong><br>
+                                <small style="color: #64748b;">Mis en place par l'employeur, versements volontaires du salarié</small>
+                            </div>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
+                                <strong style="color: #7c3aed;">3. PERO Obligatoire</strong><br>
+                                <small style="color: #64748b;">Versements obligatoires de l'employeur (participation, intéressement)</small>
+                            </div>
+                        </div>
+
+                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">✅ Avantages du PERO</h4>
+                        <ul style="color: #475569; padding-left: 20px;">
+                            <li><strong>Déduction fiscale :</strong> Les versements sont déductibles du revenu imposable</li>
+                            <li><strong>Capitalisation :</strong> L'épargne fructifie pendant la phase de constitution</li>
+                            <li><strong>Flexibilité :</strong> Possibilité de sortie en rente ou en capital</li>
+                            <li><strong>Déblocage anticipé :</strong> Dans certains cas (achat résidence principale, invalidité, etc.)</li>
+                            <li><strong>Transmission :</strong> Possibilité de transmettre le capital aux héritiers</li>
+                        </ul>
+
+                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">📊 Plafonds de déduction 2024</h4>
+                        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border: 1px solid #fbbf24;">
+                            <p style="margin: 0; color: #92400e;"><strong>Plafond annuel :</strong> 10% des revenus professionnels, dans la limite de 35 194 € (8 fois le PASS)</p>
+                        </div>
+
+                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">⚠️ Points d'attention</h4>
+                        <ul style="color: #475569; padding-left: 20px;">
+                            <li>Les sommes sont bloquées jusqu'à la retraite (sauf cas de déblocage anticipé)</li>
+                            <li>La sortie est imposable (sauf sur la part des versements déjà imposés)</li>
+                            <li>Frais de gestion à prévoir selon les contrats</li>
+                            <li>Performance non garantie (sauf fonds euros)</li>
+                        </ul>
+
+                        <div style="background: #dcfce7; padding: 15px; border-radius: 8px; margin-top: 25px; border-left: 4px solid #16a34a;">
+                            <p style="margin: 0; color: #15803d;"><strong>💡 Conseil :</strong> Le PERO est un excellent outil de préparation à la retraite, particulièrement adapté aux personnes souhaitant optimiser leur fiscalité tout en constituant un capital retraite.</p>
+                        </div>
+                    </div>
+                    <div class="upload-modal-footer">
+                        <button class="btn-cancel" onclick="closePeroModal()">Fermer</button>
+                    </div>
+                </div>
+            </div>
+
             <nav class="sidebar-nav" id="sidebar-nav">
                 <!-- Navigation générée par JS -->
             </nav>
@@ -1682,6 +1745,10 @@
                 <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
                     <span class="nav-btn-icon">👥</span>
                     <span>Autres Équipes</span>
+                </button>
+                <button class="nav-btn" onclick="openPeroModal(); closeSidebar();">
+                    <span class="nav-btn-icon">💰</span>
+                    <span>Info PERO</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -1860,6 +1927,16 @@
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
+        }
+
+        // === MODAL PERO ===
+
+        function openPeroModal() {
+            document.getElementById('peroModal').style.display = 'flex';
+        }
+
+        function closePeroModal() {
+            document.getElementById('peroModal').style.display = 'none';
         }
 
         // Fermer la sidebar quand on clique sur un match (mobile)
