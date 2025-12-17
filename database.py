@@ -196,6 +196,49 @@ class DatabaseManager:
                 ''')
                 return [dict(row) for row in cursor.fetchall()]
     
+    def get_latest_match(self):
+        """Récupère le dernier match en date avec toutes ses stats"""
+        with self.get_connection() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Récupérer le match le plus récent
+                cursor.execute('''
+                    SELECT * FROM matchs 
+                    ORDER BY date DESC, id DESC 
+                    LIMIT 1
+                ''')
+                match = cursor.fetchone()
+                
+                if not match:
+                    return None
+                
+                match_data = dict(match)
+                match_id = match_data['id']
+                
+                # Récupérer les stats des joueuses
+                cursor.execute('''
+                    SELECT * FROM stats_joueuses 
+                    WHERE match_id = %s 
+                    ORDER BY equipe, points DESC
+                ''', (match_id,))
+                match_data['stats_joueuses'] = [dict(row) for row in cursor.fetchall()]
+                
+                # Récupérer les stats des équipes
+                cursor.execute('''
+                    SELECT * FROM stats_equipes 
+                    WHERE match_id = %s
+                ''', (match_id,))
+                match_data['stats_equipes'] = [dict(row) for row in cursor.fetchall()]
+                
+                # Récupérer les combinaisons de 5
+                cursor.execute('''
+                    SELECT * FROM combinaisons_5 
+                    WHERE match_id = %s
+                    ORDER BY duree_secondes DESC
+                ''', (match_id,))
+                match_data['combinaisons_5'] = [dict(row) for row in cursor.fetchall()]
+                
+                return match_data
+    
     def get_match_by_id(self, match_id):
         """Récupère un match par son ID avec toutes ses stats"""
         with self.get_connection() as conn:
