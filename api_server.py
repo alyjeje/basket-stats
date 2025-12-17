@@ -160,6 +160,39 @@ def get_matches():
             'error': str(e)
         }), 500
 
+@app.route('/api/matches/latest', methods=['GET'])
+def get_latest_match():
+    """Récupère le dernier match joué (par date)"""
+    try:
+        matches = db.get_all_matches()
+        if not matches:
+            return jsonify({
+                'success': False,
+                'error': 'Aucun match disponible'
+            }), 404
+        
+        # Trier par date (plus récente en premier)
+        sorted_matches = sorted(matches, key=lambda x: x.get('date', ''), reverse=True)
+        latest_match_id = sorted_matches[0]['id']
+        
+        # Récupérer les détails du match le plus récent
+        match = db.get_match_by_id(latest_match_id)
+        if match:
+            return jsonify({
+                'success': True,
+                'data': match
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Match non trouvé'
+            }), 404
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/matches/<int:match_id>', methods=['GET'])
 def get_match_details(match_id):
     """Récupère les détails d'un match spécifique"""

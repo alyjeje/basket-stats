@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏀 Statistiques Basketball CSMF</title>
+    <title>🏀 Statistiques Basket CSMF</title>
     <style>
         * {
             margin: 0;
@@ -13,10 +13,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #e91e63;
+            background: #f0f8ff;
             min-height: 100vh;
-            font-size: 16px;
-            line-height: 1.6;
         }
 
         /* Layout principal avec sidebar */
@@ -28,7 +26,7 @@
         /* Sidebar */
         .sidebar {
             width: 280px;
-            background: #003087;
+            background: #1e40af;
             border-right: 1px solid rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
@@ -68,13 +66,11 @@
             padding: 12px 20px;
             background: transparent;
             border: none;
-            color: rgba(255,255,255,0.95);
-            font-size: 1rem;
-            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+            font-size: 0.95em;
             cursor: pointer;
             transition: all 0.2s;
             text-align: left;
-            line-height: 1.5;
         }
 
         .nav-btn:hover {
@@ -83,9 +79,9 @@
         }
 
         .nav-btn.active {
-            background: rgba(228, 0, 43, 0.2);
-            color: #E4002B;
-            border-left: 3px solid #E4002B;
+            background: rgba(30, 64, 175, 0.2);
+            color: #fbbf24;
+            border-left: 3px solid #1e40af;
             font-weight: 600;
         }
 
@@ -106,10 +102,10 @@
             gap: 8px;
             width: 100%;
             padding: 12px 15px;
-            background: #E4002B;
+            background: #fbbf24;
             border: none;
             border-radius: 8px;
-            color: white;
+            color: #1e293b;
             font-size: 0.9em;
             font-weight: 600;
             cursor: pointer;
@@ -118,8 +114,8 @@
 
         .upload-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(228, 0, 43, 0.4);
-            background: #c30025;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+            background: #f59e0b;
         }
 
         /* Modal d'upload */
@@ -319,8 +315,8 @@
         }
 
         .btn-import {
-            background: #E4002B;
-            color: white;
+            background: #fbbf24;
+            color: #1e293b;
             border: none;
             padding: 10px 25px;
             border-radius: 8px;
@@ -331,8 +327,8 @@
 
         .btn-import:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(228, 0, 43, 0.4);
-            background: #c30025;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+            background: #f59e0b;
         }
 
         .btn-import:disabled {
@@ -376,8 +372,8 @@
         }
 
         .match-list-item.active {
-            background: rgba(228, 0, 43, 0.2);
-            border-left-color: #E4002B;
+            background: rgba(30, 64, 175, 0.2);
+            border-left-color: #1e40af;
         }
 
         .match-list-item.active .match-teams {
@@ -385,7 +381,7 @@
         }
 
         .match-journee {
-            background: #E4002B;
+            background: #818cf8;
             color: white;
             padding: 2px 8px;
             border-radius: 4px;
@@ -469,7 +465,7 @@
             flex: 1;
             margin-left: 280px;
             padding: 30px;
-            background: #e91e63;
+            background: #f8fafc;
             min-height: 100vh;
         }
 
@@ -483,23 +479,19 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.95);
+            background: #ffffff;
             padding: 25px;
             border-radius: 15px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #93c5fd;
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
             margin-bottom: 25px;
-            backdrop-filter: blur(10px);
         }
 
         .card h2 {
-            color: #1a202c;
+            color: #1e40af;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 3px solid #E4002B;
-            font-size: 1.5rem;
-            font-weight: 700;
-            line-height: 1.3;
+            border-bottom: 3px solid #3b82f6;
         }
 
         /* Header du match actuel */
@@ -507,8 +499,8 @@
             background: #ffffff;
             padding: 25px 30px;
             border-radius: 15px;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #93c5fd;
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
             margin-bottom: 25px;
             display: flex;
             align-items: center;
@@ -516,7 +508,7 @@
         }
 
         .match-badge {
-            background: #E4002B;
+            background: #1e40af;
             color: white;
             padding: 12px 20px;
             border-radius: 12px;
@@ -527,21 +519,17 @@
         }
 
         .match-title-info h2 {
-            color: #1a202c;
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin: 0 0 8px 0;
+            color: #1e40af;
+            font-size: 1.5em;
+            margin: 0 0 5px 0;
             padding: 0;
             border: none;
-            line-height: 1.3;
         }
 
         .match-title-info p {
-            color: #4a5568;
-            margin: 0 0 4px 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            line-height: 1.4;
+            color: #64748b;
+            margin: 0;
+            font-size: 0.95em;
         }
 
         .match-selector {
@@ -583,7 +571,7 @@
         .team-score {
             font-size: 3em;
             font-weight: bold;
-            color: #003087;
+            color: #1e40af;
         }
 
         .vs {
@@ -599,29 +587,24 @@
         }
 
         th {
-            background: #003087;
-            color: #ffffff;
-            padding: 12px 10px;
+            background: #1e40af;
+            color: #fbbf24;
+            padding: 10px 8px;
             text-align: center;
-            font-weight: 700;
-            font-size: 0.875rem;
+            font-weight: 600;
+            font-size: 12px;
             white-space: nowrap;
-            line-height: 1.4;
         }
 
         td {
-            padding: 12px 10px;
+            padding: 10px 8px;
             border-bottom: 1px solid #eee;
             text-align: center;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #2d3748;
         }
 
         td:first-child {
             text-align: left;
-            font-weight: 700;
-            color: #1a202c;
+            font-weight: 600;
         }
 
         tr:hover {
@@ -633,8 +616,8 @@
             padding: 4px 10px;
             border-radius: 20px;
             font-weight: bold;
-            background: #003087;
-            color: white;
+            background: #1e40af;
+            color: #fbbf24;
             font-size: 13px;
         }
 
@@ -653,7 +636,7 @@
         }
 
         .quarter-box h3 {
-            color: #003087;
+            color: #3b82f6;
             margin-bottom: 10px;
         }
 
@@ -691,21 +674,19 @@
             background: transparent;
             border: none;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #4a5568;
+            font-size: 15px;
+            color: #666;
             border-bottom: 3px solid transparent;
             transition: all 0.3s;
-            line-height: 1.4;
         }
 
         .tab:hover {
-            color: #003087;
+            color: #3b82f6;
         }
 
         .tab.active {
-            color: #003087;
-            border-bottom-color: #E4002B;
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
         }
 
         .tab-content {
@@ -724,7 +705,7 @@
         }
 
         .stat-card {
-            background: #003087;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
@@ -779,7 +760,7 @@
         }
 
         .team-header {
-            background: #003087;
+            background: #3b82f6;
             color: white;
             padding: 15px;
             border-radius: 10px 10px 0 0;
@@ -853,18 +834,15 @@
         }
 
         .summary-item .label {
-            font-size: 0.875rem;
-            color: #4a5568;
+            font-size: 12px;
+            color: #666;
             margin-bottom: 5px;
-            font-weight: 600;
-            line-height: 1.4;
         }
 
         .summary-item .value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #1a202c;
-            line-height: 1.2;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3b82f6;
         }
 
         .scroll-table {
@@ -945,14 +923,12 @@
         }
 
         .btn-primary {
-            background: #E4002B;
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 1rem;
+            background: #fbbf24;
+            color: #1e293b;
         }
         
         .btn-primary:hover {
-            background: #c30025;
+            background: #f59e0b;
         }
 
         .btn-danger {
@@ -1113,7 +1089,7 @@
         }
 
         /* ========== COACHING IA ========== */
-        .coaching-card { background: #1e3a8a; color: white; padding: 30px; border-radius: 15px; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .coaching-card { background: #1e40af; color: white; padding: 30px; border-radius: 15px; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .coaching-card h2 { color: white; border-bottom: 3px solid rgba(255,255,255,0.3); padding-bottom: 15px; margin-bottom: 25px; }
         .coaching-card h3 { color: #fff; font-size: 1.3em; margin-top: 25px; margin-bottom: 15px; }
         .coaching-summary { background: rgba(255,255,255,0.15); padding: 15px 20px; border-radius: 10px; margin-bottom: 25px; font-size: 1.1em; text-align: center; }
@@ -1153,12 +1129,12 @@
         .advanced-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
         .advanced-stat-card { background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; border: 2px solid transparent; transition: all 0.3s; }
         .advanced-stat-card:hover { border-color: #1e40af; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(30, 64, 175, 0.2); }
-        .advanced-stat-value { font-size: 2em; font-weight: bold; color: #1e3a8a; }
+        .advanced-stat-value { font-size: 2em; font-weight: bold; color: #4338ca; }
         .advanced-stat-label { font-size: 0.9em; color: #334155; margin-top: 5px; }
         .advanced-stat-detail { font-size: 0.8em; color: #475569; margin-top: 3px; }
 
         /* Toggle sections */
-        .section-toggle { background: #1e3a8a; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 10px 5px; transition: all 0.3s; }
+        .section-toggle { background: #1e40af; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 10px 5px; transition: all 0.3s; }
         .section-toggle:hover { background: #1e3a8a; transform: translateY(-2px); }
         .section-toggle.active { background: #1d4ed8; }
         .collapsible-section { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
@@ -1168,7 +1144,7 @@
         .lineup-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
         .lineup-filter-btn { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.3s; color: #334155; }
         .lineup-filter-btn:hover { background: #cbd5e1; }
-        .lineup-filter-btn.active { background: #fbbf24; color: #1e3a8a; }
+        .lineup-filter-btn.active { background: #1e40af; color: white; }
 
         /* En-têtes de tableau triables */
         th.sortable {
@@ -1601,7 +1577,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'accueil'; // 'accueil', 'csmf', 'matches', ou 'autres'
+        let currentView = 'matches'; // 'matches', 'csmf', ou 'autres'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1673,7 +1649,8 @@
                 });
                 selectedMatchesForCsmf = allMatches.map(m => m.id); // Tous sélectionnés par défaut
                 renderSidebar();
-                // Toujours afficher la page d'accueil par défaut
+                // Ne pas charger automatiquement un match au démarrage
+                // L'utilisateur choisira via la navigation
                 render();
             } else {
                 throw new Error(result.error);
@@ -1690,17 +1667,13 @@
 
             // Navigation principale
             const navHtml = `
-                <button class="nav-btn ${currentView === 'accueil' ? 'active' : ''}" onclick="setView('accueil'); closeSidebar();">
-                    <span class="nav-btn-icon">🏠</span>
-                    <span>Accueil</span>
+                <button class="nav-btn ${currentView === 'matches' ? 'active' : ''}" onclick="setView('matches'); closeSidebar();">
+                    <span class="nav-btn-icon">📊</span>
+                    <span>Analyse Match</span>
                 </button>
                 <button class="nav-btn ${currentView === 'csmf' ? 'active' : ''}" onclick="setView('csmf'); closeSidebar();">
                     <span class="nav-btn-icon">🏆</span>
                     <span>Stats CSMF</span>
-                </button>
-                <button class="nav-btn ${currentView === 'matches' ? 'active' : ''}" onclick="setView('matches'); closeSidebar();">
-                    <span class="nav-btn-icon">📊</span>
-                    <span>Analyse Match</span>
                 </button>
                 <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
                     <span class="nav-btn-icon">👥</span>
@@ -2241,105 +2214,6 @@
             `;
         }
 
-        // Vue d'accueil
-        function renderAccueilView() {
-            return `
-                <div class="card">
-                    <div style="text-align: center; padding: 40px 20px;">
-                        <div style="font-size: 4em; margin-bottom: 20px;">🏀</div>
-                        <h1 style="color: #1a202c; font-size: 2.5em; margin-bottom: 15px; border: none;">Bienvenue sur CSMF Stats</h1>
-                        <p style="color: #64748b; font-size: 1.2em; margin-bottom: 40px;">Plateforme d'analyse des performances basketball du CSMF Paris</p>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px;">
-                    <div class="card" style="cursor: pointer; transition: transform 0.3s;" onclick="setView('csmf')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div style="text-align: center; padding: 20px;">
-                            <div style="font-size: 3em; margin-bottom: 15px;">📊</div>
-                            <h2 style="color: #1a202c; margin-bottom: 15px; border: none;">Stats CSMF</h2>
-                            <p style="color: #64748b; margin-bottom: 20px;">Analyse globale des performances de l'équipe CSMF sur plusieurs matchs</p>
-                            <ul style="text-align: left; color: #64748b; font-size: 0.9em; line-height: 1.6;">
-                                <li>📊 Statistiques moyennes par joueuse</li>
-                                <li>🎯 Pourcentages de réussite aux tirs</li>
-                                <li>⚽ Meilleures combinaisons de 11</li>
-                                <li>🤖 Analyse IA globale</li>
-                                <li>📈 Évolution des performances</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="card" style="cursor: pointer; transition: transform 0.3s;" onclick="setView('matches')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div style="text-align: center; padding: 20px;">
-                            <div style="font-size: 3em; margin-bottom: 15px;">🏆</div>
-                            <h2 style="color: #1a202c; margin-bottom: 15px; border: none;">Analyse Match</h2>
-                            <p style="color: #64748b; margin-bottom: 20px;">Analyse détaillée d'un match spécifique avec toutes les statistiques</p>
-                            <ul style="text-align: left; color: #64748b; font-size: 0.9em; line-height: 1.6;">
-                                <li>⚽ Score et résultat du match</li>
-                                <li>👥 Stats individuelles par équipe</li>
-                                <li>⚽ Combinaisons de 11 joueurs</li>
-                                <li>🤖 Conseils IA tactiques</li>
-                                <li>📈 Graphiques de performance</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="card" style="cursor: pointer; transition: transform 0.3s;" onclick="setView('autres')" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div style="text-align: center; padding: 20px;">
-                            <div style="font-size: 3em; margin-bottom: 15px;">👥</div>
-                            <h2 style="color: #1a202c; margin-bottom: 15px; border: none;">Autres Équipes</h2>
-                            <p style="color: #64748b; margin-bottom: 20px;">Analyse des équipes adverses pour préparer les prochains matchs</p>
-                            <ul style="text-align: left; color: #64748b; font-size: 0.9em; line-height: 1.6;">
-                                <li>📋 Import de matchs sans CSMF</li>
-                                <li>🎯 Sélection d'équipe à analyser</li>
-                                <li>📊 Stats des joueuses adverses</li>
-                                <li>🔍 Filtrage par adversaire</li>
-                                <li>📈 Tendances et faiblesses</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>🚀 Comment commencer ?</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #667eea;">
-                            <h3 style="color: #667eea; margin-bottom: 10px;">1. Importer des matchs</h3>
-                            <p style="color: #64748b; font-size: 0.9em;">Cliquez sur le bouton "Importer un match" dans la sidebar pour ajouter vos fichiers PDF de la fédération.</p>
-                        </div>
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #10b981;">
-                            <h3 style="color: #10b981; margin-bottom: 10px;">2. Analyser CSMF</h3>
-                            <p style="color: #64748b; font-size: 0.9em;">Accédez aux "Stats CSMF" pour voir les performances globales de votre équipe.</p>
-                        </div>
-                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid #f59e0b;">
-                            <h3 style="color: #f59e0b; margin-bottom: 10px;">3. Détailler un match</h3>
-                            <p style="color: #64748b; font-size: 0.9em;">Sélectionnez un match dans la liste pour une analyse détaillée avec l'IA.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>📁 Types de fichiers supportés</h2>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                        <div style="background: #dcfce7; padding: 15px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 2em; margin-bottom: 10px;">📄</div>
-                            <h4 style="color: #166534; margin-bottom: 8px;">FIBA Box Score</h4>
-                            <p style="color: #15803d; font-size: 0.85em;">Obligatoire - Stats de base</p>
-                        </div>
-                        <div style="background: #dbeafe; padding: 15px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 2em; margin-bottom: 10px;">📊</div>
-                            <h4 style="color: #1d4ed8; margin-bottom: 8px;">Boxscore Détaillée</h4>
-                            <p style="color: #2563eb; font-size: 0.85em;">Optionnel - Stats avancées</p>
-                        </div>
-                        <div style="background: #fef3c7; padding: 15px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 2em; margin-bottom: 10px;">🏀</div>
-                            <h4 style="color: #92400e; margin-bottom: 8px;">Analyse des 5</h4>
-                            <p style="color: #a16207; font-size: 0.85em;">Optionnel - Combinaisons</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
         // Changer de vue principale
         async function switchView(view) {
             currentView = view;
@@ -2349,6 +2223,9 @@
             } else if (view === 'autres') {
                 // Charger les matchs non-CSMF
                 await loadNonCsmfMatches();
+            } else if (view === 'matches') {
+                // Charger automatiquement le dernier match
+                await loadLatestMatch();
             }
             render();
         }
@@ -2356,6 +2233,21 @@
         // Alias pour la sidebar
         function setView(view) {
             switchView(view);
+        }
+
+        // Charger automatiquement le dernier match
+        async function loadLatestMatch() {
+            if (allMatches.length > 0) {
+                // Trier par date (plus récente en premier)
+                const sortedMatches = [...allMatches].sort((a, b) => {
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    return dateB - dateA;
+                });
+                
+                const latestMatch = sortedMatches[0];
+                await loadMatch(latestMatch.id);
+            }
         }
 
         // Charger les données CSMF de manière asynchrone
@@ -2377,9 +2269,7 @@
             renderSidebar();
 
             let contentView = '';
-            if (currentView === 'accueil') {
-                contentView = renderAccueilView();
-            } else if (currentView === 'matches') {
+            if (currentView === 'matches') {
                 contentView = renderMatchesView();
             } else if (currentView === 'csmf') {
                 contentView = renderCsmfViewContent();
