@@ -1683,6 +1683,10 @@
                     <span class="nav-btn-icon">👥</span>
                     <span>Autres Équipes</span>
                 </button>
+                <button class="nav-btn ${currentView === 'pero' ? 'active' : ''}" onclick="setView('pero'); closeSidebar();">
+                    <span class="nav-btn-icon">💰</span>
+                    <span>PERO</span>
+                </button>
             `;
             navEl.innerHTML = navHtml;
 
@@ -2283,6 +2287,8 @@
                 contentView = renderCsmfViewContent();
             } else if (currentView === 'autres') {
                 contentView = renderAutresView();
+            } else if (currentView === 'pero') {
+                contentView = renderPeroView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -3925,6 +3931,108 @@
             }
             await loadTeamData();
             render();
+        }
+
+        // Vue PERO
+        function renderPeroView() {
+            return `
+                <div class="card">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <div style="font-size: 4em; margin-bottom: 20px;">💰</div>
+                        <h1 style="color: #1e40af; font-size: 2.5em; margin-bottom: 15px; border: none;">Plan d'Épargne Retraite Obligatoire (PERO)</h1>
+                        <p style="color: #64748b; font-size: 1.1em;">Comprendre et optimiser votre épargne retraite</p>
+                    </div>
+
+                    <div class="card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border: none; margin-bottom: 30px;">
+                        <h2 style="color: white; border: none; margin-bottom: 20px;">🎯 Qu'est-ce que le PERO ?</h2>
+                        <p style="color: rgba(255,255,255,0.9); font-size: 1.1em; line-height: 1.6; margin-bottom: 20px;">
+                            Le Plan d'Épargne Retraite Obligatoire (PERO) est un dispositif d'épargne retraite par capitalisation 
+                            qui permet de constituer un complément de retraite tout en bénéficiant d'avantages fiscaux.
+                        </p>
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                            <h3 style="color: white; margin-bottom: 15px;">✨ Caractéristiques principales :</h3>
+                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px; line-height: 1.8;">
+                                <li>Déduction fiscale des versements du revenu imposable</li>
+                                <li>Capitalisation des sommes versées</li>
+                                <li>Sortie possible en rente ou en capital (depuis 2019)</li>
+                                <li>Déblocage anticipé dans certains cas exceptionnels</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 30px;">
+                        
+                        <div class="card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; padding: 25px; border: none;">
+                            <div style="font-size: 2.5em; margin-bottom: 15px;">📈</div>
+                            <h3 style="color: white; margin-bottom: 15px; border: none;">Avantages Fiscaux</h3>
+                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px; line-height: 1.6;">
+                                <li>Déduction des versements jusqu'à 10% des revenus professionnels</li>
+                                <li>Plafond minimum de 4 114 € par an (2024)</li>
+                                <li>Plafond maximum de 32 909 € par an (2024)</li>
+                                <li>Report possible des droits non utilisés sur 3 ans</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="card" style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; padding: 25px; border: none;">
+                            <div style="font-size: 2.5em; margin-bottom: 15px;">🔓</div>
+                            <h3 style="color: white; margin-bottom: 15px; border: none;">Modalités de Sortie</h3>
+                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px; line-height: 1.6;">
+                                <li>À partir de l'âge légal de départ à la retraite</li>
+                                <li>En rente viagère ou en capital</li>
+                                <li>Fiscalité avantageuse sur les sorties</li>
+                                <li>Transmission possible aux héritiers</li>
+                            </ul>
+                        </div>
+                        
+                    </div>
+
+                    <div class="card" style="background: #f8fafc; border: 2px solid #e2e8f0; padding: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 20px; border: none;">🚨 Cas de Déblocage Anticipé</h3>
+                        <p style="color: #64748b; margin-bottom: 15px;">Les fonds peuvent être débloqués avant la retraite dans les situations suivantes :</p>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                            <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #dc2626;">
+                                <h4 style="color: #dc2626; margin: 0 0 10px 0;">Situations personnelles</h4>
+                                <ul style="color: #64748b; margin: 0; padding-left: 20px; font-size: 0.9em;">
+                                    <li>Décès du conjoint ou partenaire PACS</li>
+                                    <li>Invalidité (2e ou 3e catégorie)</li>
+                                    <li>Surendettement</li>
+                                    <li>Fin de droits aux allocations chômage</li>
+                                </ul>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #059669;">
+                                <h4 style="color: #059669; margin: 0 0 10px 0;">Projets immobiliers</h4>
+                                <ul style="color: #64748b; margin: 0; padding-left: 20px; font-size: 0.9em;">
+                                    <li>Acquisition de la résidence principale</li>
+                                    <li>Remboursement de prêt immobilier</li>
+                                    <li>Travaux d'amélioration énergétique</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px; border: none;">
+                        <h3 style="color: white; margin-bottom: 20px; border: none;">💡 Conseils d'Optimisation</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                                <h4 style="color: white; margin: 0 0 10px 0;">🎯 Stratégie</h4>
+                                <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9em;">Versez régulièrement pour lisser les fluctuations des marchés et optimiser l'effet de capitalisation.</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                                <h4 style="color: white; margin: 0 0 10px 0;">📊 Diversification</h4>
+                                <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9em;">Répartissez vos investissements entre différents supports selon votre profil de risque et votre horizon.</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px;">
+                                <h4 style="color: white; margin: 0 0 10px 0;">⏰ Timing</h4>
+                                <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 0.9em;">Effectuez vos versements avant le 31 décembre pour bénéficier de la déduction fiscale de l'année.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: #eff6ff; border-radius: 15px; border: 1px solid #bae6fd; text-align: center;">
+                        <p style="color: #0369a1; margin: 0; font-size: 0.9em;">⚠️ <strong>Important :</strong> Les informations présentées sont à titre informatif. Consultez un conseiller financier pour une stratégie personnalisée adaptée à votre situation.</p>
+                    </div>
+                </div>
+            `;
         }
 
         // Vue principale Autres Équipes
