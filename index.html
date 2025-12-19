@@ -1577,7 +1577,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches' ou 'csmf'
+        let currentView = 'matches'; // 'matches', 'csmf' ou 'macron'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1669,6 +1669,10 @@
                 <button class="nav-btn ${currentView === 'csmf' ? 'active' : ''}" onclick="setView('csmf'); closeSidebar();">
                     <span class="nav-btn-icon">🏆</span>
                     <span>Stats CSMF</span>
+                </button>
+                <button class="nav-btn ${currentView === 'macron' ? 'active' : ''}" onclick="setView('macron'); closeSidebar();">
+                    <span class="nav-btn-icon">🇫🇷</span>
+                    <span>Emmanuel Macron</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -2243,6 +2247,8 @@
                 contentView = renderMatchesView();
             } else if (currentView === 'csmf') {
                 contentView = renderCsmfViewContent();
+            } else if (currentView === 'macron') {
+                contentView = renderMacronView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -2806,6 +2812,28 @@
 
                     <div id="csmf-content">
                         ${csmfDataCache ? renderCsmfData(csmfDataCache) : '<div class="loading">⏳ Chargement des statistiques...</div>'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Vue Emmanuel Macron
+        function renderMacronView() {
+            return `
+                <div class="card" style="text-align: center; padding: 60px 30px;">
+                    <h2 style="color: #1e40af; margin-bottom: 30px;">🇫🇷 Emmanuel Macron</h2>
+                    <div style="margin-bottom: 30px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Emmanuel_Macron_in_2019.jpg/400px-Emmanuel_Macron_in_2019.jpg" 
+                             alt="Emmanuel Macron" 
+                             style="max-width: 400px; width: 100%; height: auto; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                    </div>
+                    <p style="color: #64748b; font-size: 1.1em; margin-bottom: 20px;">
+                        Président de la République française
+                    </p>
+                    <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-top: 30px;">
+                        <p style="color: #475569; font-style: italic;">
+                            "Le sport, et particulièrement le basket-ball, rassemble et unit notre nation."
+                        </p>
                     </div>
                 </div>
             `;
