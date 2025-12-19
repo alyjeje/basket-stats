@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            background: #f0f8ff;
             min-height: 100vh;
         }
 
@@ -26,8 +26,8 @@
         /* Sidebar */
         .sidebar {
             width: 280px;
-            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
-            border-right: 1px solid rgba(251, 191, 36, 0.3);
+            background: #1e40af;
+            border-right: 1px solid rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -79,9 +79,9 @@
         }
 
         .nav-btn.active {
-            background: rgba(251, 191, 36, 0.2);
+            background: rgba(30, 64, 175, 0.2);
             color: #fbbf24;
-            border-left: 3px solid #fbbf24;
+            border-left: 3px solid #1e40af;
             font-weight: 600;
         }
 
@@ -102,10 +102,10 @@
             gap: 8px;
             width: 100%;
             padding: 12px 15px;
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            background: #fbbf24;
             border: none;
             border-radius: 8px;
-            color: #1e3a8a;
+            color: #1e293b;
             font-size: 0.9em;
             font-weight: 600;
             cursor: pointer;
@@ -114,8 +114,8 @@
 
         .upload-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.6);
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+            background: #f59e0b;
         }
 
         /* Modal d'upload */
@@ -372,8 +372,8 @@
         }
 
         .match-list-item.active {
-            background: rgba(251, 191, 36, 0.2);
-            border-left-color: #fbbf24;
+            background: rgba(30, 64, 175, 0.2);
+            border-left-color: #1e40af;
         }
 
         .match-list-item.active .match-teams {
@@ -381,8 +381,8 @@
         }
 
         .match-journee {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #1e3a8a;
+            background: #818cf8;
+            color: white;
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 0.7em;
@@ -465,7 +465,7 @@
             flex: 1;
             margin-left: 280px;
             padding: 30px;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            background: #f8fafc;
             min-height: 100vh;
         }
 
@@ -482,16 +482,16 @@
             background: #ffffff;
             padding: 25px;
             border-radius: 15px;
-            border: 2px solid rgba(251, 191, 36, 0.3);
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+            border: 1px solid #93c5fd;
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
             margin-bottom: 25px;
         }
 
         .card h2 {
-            color: #1e3a8a;
+            color: #1e40af;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 3px solid #fbbf24;
+            border-bottom: 3px solid #3b82f6;
         }
 
         /* Header du match actuel */
@@ -499,8 +499,8 @@
             background: #ffffff;
             padding: 25px 30px;
             border-radius: 15px;
-            border: 2px solid rgba(251, 191, 36, 0.3);
-            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+            border: 1px solid #93c5fd;
+            box-shadow: 0 1px 3px rgba(59, 130, 246, 0.1);
             margin-bottom: 25px;
             display: flex;
             align-items: center;
@@ -508,8 +508,8 @@
         }
 
         .match-badge {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-            color: #fbbf24;
+            background: #1e40af;
+            color: white;
             padding: 12px 20px;
             border-radius: 12px;
             font-weight: bold;
@@ -519,7 +519,7 @@
         }
 
         .match-title-info h2 {
-            color: #1e3a8a;
+            color: #1e40af;
             font-size: 1.5em;
             margin: 0 0 5px 0;
             padding: 0;
@@ -571,7 +571,7 @@
         .team-score {
             font-size: 3em;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #1e40af;
         }
 
         .vs {
@@ -587,7 +587,7 @@
         }
 
         th {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            background: #1e40af;
             color: #fbbf24;
             padding: 10px 8px;
             text-align: center;
@@ -616,7 +616,7 @@
             padding: 4px 10px;
             border-radius: 20px;
             font-weight: bold;
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            background: #1e40af;
             color: #fbbf24;
             font-size: 13px;
         }
@@ -636,7 +636,7 @@
         }
 
         .quarter-box h3 {
-            color: #1e3a8a;
+            color: #3b82f6;
             margin-bottom: 10px;
         }
 
@@ -681,12 +681,12 @@
         }
 
         .tab:hover {
-            color: #1e3a8a;
+            color: #3b82f6;
         }
 
         .tab.active {
-            color: #1e3a8a;
-            border-bottom-color: #fbbf24;
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
         }
 
         .tab-content {
@@ -705,8 +705,8 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-            color: #fbbf24;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
@@ -753,15 +753,15 @@
         .rank-1 { background: gold; color: #333; }
         .rank-2 { background: silver; color: #333; }
         .rank-3 { background: #cd7f32; color: white; }
-        .rank-other { background: #1e3a8a; color: #fbbf24; }
+        .rank-other { background: #3b82f6; color: white; }
 
         .team-section {
             margin-bottom: 40px;
         }
 
         .team-header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-            color: #fbbf24;
+            background: #3b82f6;
+            color: white;
             padding: 15px;
             border-radius: 10px 10px 0 0;
             font-size: 1.3em;
@@ -816,7 +816,7 @@
         }
 
         .summary-stats h3 {
-            color: #1e3a8a;
+            color: #3b82f6;
             margin-bottom: 15px;
         }
 
@@ -842,7 +842,7 @@
         .summary-item .value {
             font-size: 1.8em;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #3b82f6;
         }
 
         .scroll-table {
@@ -923,12 +923,12 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #1e3a8a;
+            background: #fbbf24;
+            color: #1e293b;
         }
         
         .btn-primary:hover {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            background: #f59e0b;
         }
 
         .btn-danger {
@@ -1134,9 +1134,9 @@
         .advanced-stat-detail { font-size: 0.8em; color: #475569; margin-top: 3px; }
 
         /* Toggle sections */
-        .section-toggle { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: #fbbf24; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 10px 5px; transition: all 0.3s; }
-        .section-toggle:hover { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); transform: translateY(-2px); }
-        .section-toggle.active { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #1e3a8a; }
+        .section-toggle { background: #1e40af; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 10px 5px; transition: all 0.3s; }
+        .section-toggle:hover { background: #1e3a8a; transform: translateY(-2px); }
+        .section-toggle.active { background: #1d4ed8; }
         .collapsible-section { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
         .collapsible-section.expanded { max-height: 5000px; }
 
@@ -1144,7 +1144,7 @@
         .lineup-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
         .lineup-filter-btn { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.3s; color: #334155; }
         .lineup-filter-btn:hover { background: #cbd5e1; }
-        .lineup-filter-btn.active { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: #fbbf24; }
+        .lineup-filter-btn.active { background: #1e40af; color: white; }
 
         /* En-têtes de tableau triables */
         th.sortable {
@@ -1169,15 +1169,15 @@
         th.sortable.sort-asc::after {
             content: '▲';
             opacity: 1;
-            color: #fbbf24;
+            color: #1e40af;
         }
         th.sortable.sort-desc::after {
             content: '▼';
             opacity: 1;
-            color: #fbbf24;
+            color: #1e40af;
         }
         th.sortable.sort-asc, th.sortable.sort-desc {
-            background: rgba(251, 191, 36, 0.3);
+            background: rgba(30, 64, 175, 0.2);
         }
 
         /* ═══════════════════════════════════════════════════════════════ */
@@ -1192,18 +1192,18 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+            background: #1e293b;
             z-index: 150;
             padding: 0 15px;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 2px solid #fbbf24;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .hamburger-btn {
             background: none;
             border: none;
-            color: #fbbf24;
+            color: white;
             font-size: 1.8em;
             cursor: pointer;
             padding: 10px;
@@ -1211,7 +1211,7 @@
         }
 
         .mobile-header h1 {
-            color: #fbbf24;
+            color: white;
             font-size: 1.2em;
             margin: 0;
         }
@@ -1242,9 +1242,9 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            background: rgba(251, 191, 36, 0.2);
+            background: rgba(255,255,255,0.1);
             border: none;
-            color: #fbbf24;
+            color: white;
             font-size: 1.5em;
             cursor: pointer;
             padding: 5px 10px;
@@ -1506,69 +1506,6 @@
                 </div>
             </div>
 
-            <!-- Modal PERO -->
-            <div id="peroModal" class="upload-modal" style="display: none;">
-                <div class="upload-modal-content" style="max-width: 800px;">
-                    <div class="upload-modal-header">
-                        <h3>💰 Plan Épargne Retraite Obligatoire (PERO)</h3>
-                        <button class="modal-close" onclick="closePeroModal()">✕</button>
-                    </div>
-                    <div class="upload-modal-body" style="line-height: 1.6;">
-                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #1976d2;">
-                            <p style="margin: 0; color: #1565c0; font-weight: 600;">ℹ️ Le PERO est un dispositif d'épargne retraite mis en place par la loi PACTE de 2019.</p>
-                        </div>
-
-                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">🎯 Qu'est-ce que le PERO ?</h4>
-                        <p>Le Plan Épargne Retraite Obligatoire (PERO) est un produit d'épargne retraite qui remplace les anciens dispositifs (PERP, Madelin, etc.). Il permet de constituer un complément de retraite tout en bénéficiant d'avantages fiscaux.</p>
-
-                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">💡 Les 3 compartiments du PERO</h4>
-                        <div style="display: grid; gap: 15px; margin-bottom: 20px;">
-                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-                                <strong style="color: #047857;">1. PERO Individuel</strong><br>
-                                <small style="color: #64748b;">Souscription volontaire, versements libres, déductibles des revenus imposables</small>
-                            </div>
-                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                                <strong style="color: #d97706;">2. PERO Collectif</strong><br>
-                                <small style="color: #64748b;">Mis en place par l'employeur, versements volontaires du salarié</small>
-                            </div>
-                            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-                                <strong style="color: #7c3aed;">3. PERO Obligatoire</strong><br>
-                                <small style="color: #64748b;">Versements obligatoires de l'employeur (participation, intéressement)</small>
-                            </div>
-                        </div>
-
-                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">✅ Avantages du PERO</h4>
-                        <ul style="color: #475569; padding-left: 20px;">
-                            <li><strong>Déduction fiscale :</strong> Les versements sont déductibles du revenu imposable</li>
-                            <li><strong>Capitalisation :</strong> L'épargne fructifie pendant la phase de constitution</li>
-                            <li><strong>Flexibilité :</strong> Possibilité de sortie en rente ou en capital</li>
-                            <li><strong>Déblocage anticipé :</strong> Dans certains cas (achat résidence principale, invalidité, etc.)</li>
-                            <li><strong>Transmission :</strong> Possibilité de transmettre le capital aux héritiers</li>
-                        </ul>
-
-                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">📊 Plafonds de déduction 2024</h4>
-                        <div style="background: #fef3c7; padding: 15px; border-radius: 8px; border: 1px solid #fbbf24;">
-                            <p style="margin: 0; color: #92400e;"><strong>Plafond annuel :</strong> 10% des revenus professionnels, dans la limite de 35 194 € (8 fois le PASS)</p>
-                        </div>
-
-                        <h4 style="color: #1e40af; margin-top: 25px; margin-bottom: 15px;">⚠️ Points d'attention</h4>
-                        <ul style="color: #475569; padding-left: 20px;">
-                            <li>Les sommes sont bloquées jusqu'à la retraite (sauf cas de déblocage anticipé)</li>
-                            <li>La sortie est imposable (sauf sur la part des versements déjà imposés)</li>
-                            <li>Frais de gestion à prévoir selon les contrats</li>
-                            <li>Performance non garantie (sauf fonds euros)</li>
-                        </ul>
-
-                        <div style="background: #dcfce7; padding: 15px; border-radius: 8px; margin-top: 25px; border-left: 4px solid #16a34a;">
-                            <p style="margin: 0; color: #15803d;"><strong>💡 Conseil :</strong> Le PERO est un excellent outil de préparation à la retraite, particulièrement adapté aux personnes souhaitant optimiser leur fiscalité tout en constituant un capital retraite.</p>
-                        </div>
-                    </div>
-                    <div class="upload-modal-footer">
-                        <button class="btn-cancel" onclick="closePeroModal()">Fermer</button>
-                    </div>
-                </div>
-            </div>
-
             <nav class="sidebar-nav" id="sidebar-nav">
                 <!-- Navigation générée par JS -->
             </nav>
@@ -1640,7 +1577,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'accueil'; // 'accueil', 'matches', 'csmf', ou 'autres'
+        let currentView = 'matches'; // 'matches' ou 'csmf'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1648,13 +1585,6 @@
         // État du tri pour le tableau CSMF
         let csmfSortColumn = 'evaluation'; // Colonne par défaut
         let csmfSortDirection = 'desc'; // 'asc' ou 'desc'
-
-        // Autres équipes
-        let allNonCsmfMatches = [];
-        let selectedTeam = null;
-        let teamMatches = [];
-        let selectedOpponents = [];
-        let teamStatsCache = null;
 
         // Fonction pour obtenir un nom d'équipe court mais lisible
         function getShortTeamName(fullName) {
@@ -1712,9 +1642,11 @@
                 });
                 selectedMatchesForCsmf = allMatches.map(m => m.id); // Tous sélectionnés par défaut
                 renderSidebar();
-                // Ne pas charger automatiquement un match au démarrage
-                // L'utilisateur choisira via la navigation
-                render();
+                if (allMatches.length > 0) {
+                    await loadMatch(allMatches[0].id);
+                } else {
+                    render();
+                }
             } else {
                 throw new Error(result.error);
             }
@@ -1730,25 +1662,13 @@
 
             // Navigation principale
             const navHtml = `
-                <button class="nav-btn ${currentView === 'accueil' ? 'active' : ''}" onclick="setView('accueil'); closeSidebar();">
-                    <span class="nav-btn-icon">🏠</span>
-                    <span>Accueil</span>
-                </button>
-                <button class="nav-btn ${currentView === 'csmf' ? 'active' : ''}" onclick="setView('csmf'); closeSidebar();">
-                    <span class="nav-btn-icon">🏆</span>
-                    <span>Stats CSMF</span>
-                </button>
                 <button class="nav-btn ${currentView === 'matches' ? 'active' : ''}" onclick="setView('matches'); closeSidebar();">
                     <span class="nav-btn-icon">📊</span>
                     <span>Analyse Match</span>
                 </button>
-                <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
-                    <span class="nav-btn-icon">👥</span>
-                    <span>Autres Équipes</span>
-                </button>
-                <button class="nav-btn" onclick="openPeroModal(); closeSidebar();">
-                    <span class="nav-btn-icon">💰</span>
-                    <span>Info PERO</span>
+                <button class="nav-btn ${currentView === 'csmf' ? 'active' : ''}" onclick="setView('csmf'); closeSidebar();">
+                    <span class="nav-btn-icon">🏆</span>
+                    <span>Stats CSMF</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -1927,16 +1847,6 @@
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.remove('open');
             overlay.classList.remove('active');
-        }
-
-        // === MODAL PERO ===
-
-        function openPeroModal() {
-            document.getElementById('peroModal').style.display = 'flex';
-        }
-
-        function closePeroModal() {
-            document.getElementById('peroModal').style.display = 'none';
         }
 
         // Fermer la sidebar quand on clique sur un match (mobile)
@@ -2301,14 +2211,6 @@
             if (view === 'csmf') {
                 // Charger les données CSMF
                 await loadCsmfDataAsync();
-            } else if (view === 'autres') {
-                // Charger les matchs non-CSMF
-                await loadNonCsmfMatches();
-            } else if (view === 'matches') {
-                // Charger automatiquement le dernier match
-                await loadLatestMatch();
-            } else if (view === 'accueil') {
-                // Page d'accueil - pas de chargement spécial
             }
             render();
         }
@@ -2316,21 +2218,6 @@
         // Alias pour la sidebar
         function setView(view) {
             switchView(view);
-        }
-
-        // Charger automatiquement le dernier match
-        async function loadLatestMatch() {
-            if (allMatches.length > 0) {
-                // Trier par date (plus récente en premier)
-                const sortedMatches = [...allMatches].sort((a, b) => {
-                    const dateA = new Date(a.date);
-                    const dateB = new Date(b.date);
-                    return dateB - dateA;
-                });
-                
-                const latestMatch = sortedMatches[0];
-                await loadMatch(latestMatch.id);
-            }
         }
 
         // Charger les données CSMF de manière asynchrone
@@ -2352,14 +2239,10 @@
             renderSidebar();
 
             let contentView = '';
-            if (currentView === 'accueil') {
-                contentView = renderAccueilView();
-            } else if (currentView === 'matches') {
+            if (currentView === 'matches') {
                 contentView = renderMatchesView();
             } else if (currentView === 'csmf') {
                 contentView = renderCsmfViewContent();
-            } else if (currentView === 'autres') {
-                contentView = renderAutresView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -2373,88 +2256,6 @@
             return ''; // La navigation est maintenant dans la sidebar
         }
 
-        // Vue d'accueil
-        function renderAccueilView() {
-            return `
-                <div class="card" style="text-align: center; padding: 40px;">
-                    <div style="font-size: 4em; margin-bottom: 20px;">🏀</div>
-                    <h1 style="color: #1e40af; font-size: 2.5em; margin-bottom: 15px; border: none;">Bienvenue sur CSMF Stats</h1>
-                    <p style="color: #64748b; font-size: 1.2em; margin-bottom: 40px;">Plateforme d'analyse des performances basket du CSMF Paris</p>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 40px; text-align: left;">
-                        
-                        <div class="card" style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 30px; border: none;">
-                            <div style="font-size: 2.5em; margin-bottom: 15px;">🏆</div>
-                            <h3 style="color: white; margin-bottom: 15px; border: none;">Stats CSMF</h3>
-                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Analysez les performances globales de l'équipe CSMF sur plusieurs matchs :</p>
-                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px;">
-                                <li>Statistiques cumulées des joueuses</li>
-                                <li>Moyennes par match et pourcentages</li>
-                                <li>Meilleures combinaisons de 5</li>
-                                <li>Analyse IA avec conseils tactiques</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; padding: 30px; border: none;">
-                            <div style="font-size: 2.5em; margin-bottom: 15px;">📊</div>
-                            <h3 style="color: white; margin-bottom: 15px; border: none;">Analyse Match</h3>
-                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Étudiez en détail chaque match individuellement :</p>
-                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px;">
-                                <li>Vue d'ensemble du match et score</li>
-                                <li>Statistiques par joueuse et équipe</li>
-                                <li>Combinaisons de 5 utilisées</li>
-                                <li>Analyse IA spécifique au match</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="card" style="background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%); color: white; padding: 30px; border: none;">
-                            <div style="font-size: 2.5em; margin-bottom: 15px;">👥</div>
-                            <h3 style="color: white; margin-bottom: 15px; border: none;">Autres Équipes</h3>
-                            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Analysez les équipes adverses pour mieux les connaître :</p>
-                            <ul style="color: rgba(255,255,255,0.9); margin: 0; padding-left: 20px;">
-                                <li>Import de matchs sans le CSMF</li>
-                                <li>Statistiques des équipes adverses</li>
-                                <li>Profils des joueuses adverses</li>
-                                <li>Préparation tactique</li>
-                            </ul>
-                        </div>
-                        
-                    </div>
-                    
-                    <div class="card" style="margin-top: 40px; background: #f8fafc; border: 2px solid #e2e8f0; padding: 30px;">
-                        <h3 style="color: #1e40af; margin-bottom: 20px; border: none;">🚀 Comment commencer ?</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: left;">
-                            <div style="display: flex; align-items: flex-start; gap: 15px;">
-                                <div style="background: #1e40af; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">1</div>
-                                <div>
-                                    <h4 style="color: #1e40af; margin: 0 0 8px 0;">Importez vos matchs</h4>
-                                    <p style="color: #64748b; margin: 0; font-size: 0.9em;">Cliquez sur "Importer un match" et uploadez les fichiers PDF de la fédération</p>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: flex-start; gap: 15px;">
-                                <div style="background: #1e40af; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">2</div>
-                                <div>
-                                    <h4 style="color: #1e40af; margin: 0 0 8px 0;">Explorez les statistiques</h4>
-                                    <p style="color: #64748b; margin: 0; font-size: 0.9em;">Naviguez entre les différents menus pour analyser les performances</p>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: flex-start; gap: 15px;">
-                                <div style="background: #1e40af; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">3</div>
-                                <div>
-                                    <h4 style="color: #1e40af; margin: 0 0 8px 0;">Utilisez l'IA</h4>
-                                    <p style="color: #64748b; margin: 0; font-size: 0.9em;">Profitez des analyses automatiques et conseils tactiques générés par l'IA</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-top: 30px; padding: 20px; background: #eff6ff; border-radius: 15px; border: 1px solid #bae6fd;">
-                        <p style="color: #0369a1; margin: 0; font-size: 0.9em;">💡 <strong>Astuce :</strong> Pour une analyse complète, importez les 3 fichiers PDF : FIBA Box Score (obligatoire), Boxscore Détaillée et Analyse des 5 en jeu (optionnels)</p>
-                    </div>
-                </div>
-            `;
-        }
-        
         // Vue des matchs (ancienne interface)
         function renderMatchesView() {
             if (!currentMatch) {
@@ -3750,445 +3551,7 @@
         }
 
 
-        // ========== GESTION AUTRES ÉQUIPES ==========
 
-        // Charger tous les matchs non-CSMF
-        async function loadNonCsmfMatches() {
-            const response = await fetch(`${API_URL}/matches`);
-            const result = await response.json();
-
-            if (result.success) {
-                // Filtrer pour ne garder que les matchs sans CSMF
-                allNonCsmfMatches = result.data.filter(m =>
-                    !m.equipe_domicile.includes('CSMF') &&
-                    !m.equipe_exterieur.includes('CSMF')
-                );
-            }
-        }
-
-        // Upload d'un match non-CSMF avec contrôle
-        async function uploadNonCsmfMatch() {
-            const fileInput = document.getElementById('pdfFileAutres');
-            const messageDiv = document.getElementById('uploadMessageAutres');
-
-            if (!fileInput.files || fileInput.files.length === 0) {
-                messageDiv.className = 'message error show';
-                messageDiv.textContent = '❌ Veuillez sélectionner un fichier PDF';
-                return;
-            }
-
-            const file = fileInput.files[0];
-
-            if (!file.name.toLowerCase().endsWith('.pdf')) {
-                messageDiv.className = 'message error show';
-                messageDiv.textContent = '❌ Seuls les fichiers PDF sont acceptés';
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', file);
-
-            messageDiv.className = 'message show';
-            messageDiv.innerHTML = '<span class="loading"></span> Vérification et import...';
-
-            try {
-                const response = await fetch(`${API_URL}/matches/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Vérifier si le match contient CSMF
-                    const match = result.match;
-                    if (match.equipe_domicile.includes('CSMF') || match.equipe_exterieur.includes('CSMF')) {
-                        // Supprimer le match de la base
-                        await fetch(`${API_URL}/matches/${result.match_id}`, { method: 'DELETE' });
-
-                        messageDiv.className = 'message error show';
-                        messageDiv.textContent = '❌ Ce match contient le CSMF ! Utilisez l\'onglet "Analyse par Match"';
-                        fileInput.value = '';
-                        return;
-                    }
-
-                    messageDiv.className = 'message success show';
-                    messageDiv.textContent = '✅ Match importé avec succès !';
-                    fileInput.value = '';
-
-                    await loadNonCsmfMatches();
-                    render();
-
-                    setTimeout(() => {
-                        messageDiv.className = 'message';
-                    }, 3000);
-                } else {
-                    messageDiv.className = 'message error show';
-                    messageDiv.textContent = '❌ Erreur: ' + result.error;
-                }
-            } catch (error) {
-                messageDiv.className = 'message error show';
-                messageDiv.textContent = '❌ Erreur lors de l\'upload: ' + error.message;
-            }
-        }
-
-        // Supprimer un match non-CSMF
-        async function deleteNonCsmfMatch(matchId, event) {
-            event.stopPropagation();
-
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce match ?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/matches/${matchId}`, {
-                    method: 'DELETE'
-                });
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Match supprimé avec succès !');
-                    await loadNonCsmfMatches();
-
-                    // Réinitialiser si c'était l'équipe sélectionnée
-                    if (selectedTeam) {
-                        await selectTeam(selectedTeam);
-                    }
-
-                    render();
-                } else {
-                    alert('❌ Erreur: ' + result.error);
-                }
-            } catch (error) {
-                alert('❌ Erreur lors de la suppression: ' + error.message);
-            }
-        }
-
-        // Obtenir la liste des équipes uniques
-        function getUniqueTeams() {
-            const teams = new Set();
-            allNonCsmfMatches.forEach(m => {
-                teams.add(m.equipe_domicile);
-                teams.add(m.equipe_exterieur);
-            });
-            return Array.from(teams).sort();
-        }
-
-        // Sélectionner une équipe
-        async function selectTeam(teamName) {
-            selectedTeam = teamName;
-
-            // Charger les matchs de cette équipe
-            teamMatches = allNonCsmfMatches.filter(m =>
-                m.equipe_domicile === teamName || m.equipe_exterieur === teamName
-            );
-
-            // Par défaut, sélectionner tous les adversaires
-            const opponents = new Set();
-            teamMatches.forEach(m => {
-                const opponent = m.equipe_domicile === teamName ? m.equipe_exterieur : m.equipe_domicile;
-                opponents.add(opponent);
-            });
-            selectedOpponents = Array.from(opponents);
-
-            // Charger les stats de l'équipe
-            await loadTeamData();
-            render();
-        }
-
-        // Charger les données d'une équipe
-        async function loadTeamData() {
-            if (!selectedTeam) return;
-
-            const teamPlayers = {};
-
-            // Filtrer les matchs selon les adversaires sélectionnés
-            const filteredMatches = teamMatches.filter(m => {
-                const opponent = m.equipe_domicile === selectedTeam ? m.equipe_exterieur : m.equipe_domicile;
-                return selectedOpponents.includes(opponent);
-            });
-
-            for (const match of filteredMatches) {
-                const response = await fetch(`${API_URL}/matches/${match.id}`);
-                const result = await response.json();
-
-                if (result.success) {
-                    const matchData = result.data;
-                    const players = matchData.stats_joueuses || [];
-
-                    // Filtrer les joueuses de l'équipe sélectionnée
-                    players.forEach(p => {
-                        if (p.equipe.includes(selectedTeam.split(' ')[0])) {
-                            const lastName = getLastName(p.nom);
-
-                            if (!teamPlayers[lastName]) {
-                                teamPlayers[lastName] = {
-                                    nom: p.nom,
-                                    matchs: 0,
-                                    points: 0,
-                                    rebonds: 0,
-                                    passes: 0,
-                                    tirs_reussis: 0,
-                                    tirs_tentes: 0,
-                                    tirs_2pts_reussis: 0,
-                                    tirs_2pts_tentes: 0,
-                                    tirs_3pts_reussis: 0,
-                                    tirs_3pts_tentes: 0,
-                                    lf_reussis: 0,
-                                    lf_tentes: 0,
-                                    balles_perdues: 0,
-                                    interceptions: 0,
-                                    contres: 0,
-                                    fautes: 0,
-                                    evaluation: 0
-                                };
-                            }
-
-                            teamPlayers[lastName].matchs++;
-                            teamPlayers[lastName].points += p.points || 0;
-                            teamPlayers[lastName].rebonds += p.rebonds_total || 0;
-                            teamPlayers[lastName].passes += p.passes_decisives || 0;
-                            teamPlayers[lastName].tirs_reussis += p.tirs_reussis || 0;
-                            teamPlayers[lastName].tirs_tentes += p.tirs_tentes || 0;
-                            teamPlayers[lastName].tirs_2pts_reussis += p.tirs_2pts_reussis || 0;
-                            teamPlayers[lastName].tirs_2pts_tentes += p.tirs_2pts_tentes || 0;
-                            teamPlayers[lastName].tirs_3pts_reussis += p.tirs_3pts_reussis || 0;
-                            teamPlayers[lastName].tirs_3pts_tentes += p.tirs_3pts_tentes || 0;
-                            teamPlayers[lastName].lf_reussis += p.lf_reussis || 0;
-                            teamPlayers[lastName].lf_tentes += p.lf_tentes || 0;
-                            teamPlayers[lastName].balles_perdues += p.balles_perdues || 0;
-                            teamPlayers[lastName].interceptions += p.interceptions || 0;
-                            teamPlayers[lastName].contres += p.contres || 0;
-                            teamPlayers[lastName].fautes += p.fautes || 0;
-                            teamPlayers[lastName].evaluation += p.evaluation || 0;
-                        }
-                    });
-                }
-            }
-
-            teamStatsCache = Object.values(teamPlayers);
-        }
-
-        // Helper pour extraire le nom de famille
-        function getLastName(fullName) {
-            if (!fullName) return '';
-            const parts = fullName.trim().split(/\s+/);
-            return parts[parts.length - 1];
-        }
-
-        // Toggle un adversaire
-        async function toggleOpponent(opponent) {
-            const index = selectedOpponents.indexOf(opponent);
-            if (index > -1) {
-                selectedOpponents.splice(index, 1);
-            } else {
-                selectedOpponents.push(opponent);
-            }
-            await loadTeamData();
-            render();
-        }
-
-        // Toggle tous les adversaires
-        async function toggleAllOpponents(checkbox) {
-            if (checkbox.checked) {
-                const opponents = new Set();
-                teamMatches.forEach(m => {
-                    const opponent = m.equipe_domicile === selectedTeam ? m.equipe_exterieur : m.equipe_domicile;
-                    opponents.add(opponent);
-                });
-                selectedOpponents = Array.from(opponents);
-            } else {
-                selectedOpponents = [];
-            }
-            await loadTeamData();
-            render();
-        }
-
-
-
-        // Vue principale Autres Équipes
-        function renderAutresView() {
-            const teams = getUniqueTeams();
-
-            return `
-                <div class="card">
-                    <h2>🔍 Analyse des Autres Équipes</h2>
-
-                    <!-- Section d'upload -->
-                    <div class="upload-section">
-                        <h3>➕ Ajouter un match (sans CSMF)</h3>
-                        <div class="file-input-wrapper">
-                            <input type="file" id="pdfFileAutres" accept=".pdf" />
-                            <button class="btn btn-primary" onclick="uploadNonCsmfMatch()">
-                                📤 Importer le PDF
-                            </button>
-                        </div>
-                        <div id="uploadMessageAutres" class="message"></div>
-                        <p style="color: #999; font-size: 13px; margin-top: 10px;">
-                            ⚠️ Les matchs contenant le CSMF seront automatiquement rejetés
-                        </p>
-                    </div>
-
-                    <!-- Liste des matchs non-CSMF -->
-                    <h3 style="margin-top: 30px;">📋 Matchs disponibles (${allNonCsmfMatches.length})</h3>
-                    ${allNonCsmfMatches.length > 0 ? `
-                        <div class="match-selector">
-                            ${allNonCsmfMatches.map(m => `
-                                <div style="position: relative;">
-                                    <button class="match-btn" style="width: 100%; text-align: left; cursor: default;">
-                                        ${m.equipe_domicile} vs ${m.equipe_exterieur}
-                                        <br><small>${m.date} • ${m.score_domicile}-${m.score_exterieur}</small>
-                                    </button>
-                                    <button class="btn btn-danger btn-small"
-                                            onclick="deleteNonCsmfMatch(${m.id}, event)"
-                                            style="position: absolute; top: 5px; right: 5px;">
-                                        🗑️
-                                    </button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    ` : '<p style="color: #999;">Aucun match importé</p>'}
-
-                    ${teams.length > 0 ? `
-                        <!-- Sélection d'équipe -->
-                        <h3 style="margin-top: 30px;">🎯 Sélectionner une équipe à analyser</h3>
-                        <select onchange="selectTeam(this.value)" style="width: 100%; padding: 10px; font-size: 16px;">
-                            <option value="">-- Choisir une équipe --</option>
-                            ${teams.map(t => `
-                                <option value="${t}" ${selectedTeam === t ? 'selected' : ''}>${t}</option>
-                            `).join('')}
-                        </select>
-
-                        ${selectedTeam ? renderTeamAnalysis() : ''}
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        // Analyse de l'équipe sélectionnée
-        function renderTeamAnalysis() {
-            // Liste des adversaires
-            const opponents = new Set();
-            teamMatches.forEach(m => {
-                const opponent = m.equipe_domicile === selectedTeam ? m.equipe_exterieur : m.equipe_domicile;
-                opponents.add(opponent);
-            });
-            const allOpponents = Array.from(opponents);
-
-            return `
-                <div style="margin-top: 30px; padding: 20px; background: #f8f9ff; border-radius: 10px;">
-                    <h3>📊 Analyse de ${selectedTeam}</h3>
-                    <p style="color: #666;">${teamMatches.length} match(s) disponible(s)</p>
-
-                    <!-- Filtrage par adversaire -->
-                    <div style="margin: 20px 0;">
-                        <h4>Filtrer par adversaire :</h4>
-                        <div class="checkbox-group" style="margin-top: 10px;">
-                            <label class="checkbox-label">
-                                <input type="checkbox"
-                                       ${selectedOpponents.length === allOpponents.length ? 'checked' : ''}
-                                       onchange="toggleAllOpponents(this)">
-                                Tous les adversaires
-                            </label>
-                            ${allOpponents.map(opp => `
-                                <label class="checkbox-label">
-                                    <input type="checkbox"
-                                           ${selectedOpponents.includes(opp) ? 'checked' : ''}
-                                           onchange="toggleOpponent('${opp}')">
-                                    ${opp}
-                                </label>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    ${selectedOpponents.length > 0 && teamStatsCache ? renderTeamStats() : '<p style="color: #999;">Sélectionnez au moins un adversaire</p>'}
-                </div>
-            `;
-        }
-
-        // Stats globales de l'équipe
-        function renderTeamStats() {
-            if (!teamStatsCache || teamStatsCache.length === 0) {
-                return '<p style="color: #999;">Aucune statistique disponible</p>';
-            }
-
-            // Calculer les stats globales
-            const totalPoints = teamStatsCache.reduce((sum, p) => sum + p.points, 0);
-            const totalMatches = selectedOpponents.length;
-            const avgPoints = (totalPoints / totalMatches).toFixed(1);
-
-            return `
-                <div style="margin-top: 20px;">
-                    <div class="summary-stats">
-                        <h3>Résumé</h3>
-                        <div class="summary-grid">
-                            <div class="summary-item">
-                                <div class="label">Matchs analysés</div>
-                                <div class="value">${totalMatches}</div>
-                            </div>
-                            <div class="summary-item">
-                                <div class="label">Points marqués</div>
-                                <div class="value">${totalPoints}</div>
-                            </div>
-                            <div class="summary-item">
-                                <div class="label">Moyenne / match</div>
-                                <div class="value">${avgPoints}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h3 style="margin-top: 30px;">👥 Statistiques des Joueuses</h3>
-                    <div class="scroll-table">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Joueuse</th>
-                                    <th>Matchs</th>
-                                    <th>PTS</th>
-                                    <th>Moy PTS</th>
-                                    <th>REB</th>
-                                    <th>PD</th>
-                                    <th>Tirs %</th>
-                                    <th>3pts %</th>
-                                    <th>LF %</th>
-                                    <th>BP</th>
-                                    <th>INT</th>
-                                    <th>CTR</th>
-                                    <th>FT</th>
-                                    <th>EVAL</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${teamStatsCache.sort((a, b) => b.points - a.points).map(p => {
-                                    const tirsPerc = p.tirs_tentes > 0 ? ((p.tirs_reussis / p.tirs_tentes) * 100).toFixed(1) : 0;
-                                    const tirs3Perc = p.tirs_3pts_tentes > 0 ? ((p.tirs_3pts_reussis / p.tirs_3pts_tentes) * 100).toFixed(1) : 0;
-                                    const lfPerc = p.lf_tentes > 0 ? ((p.lf_reussis / p.lf_tentes) * 100).toFixed(1) : 0;
-
-                                    return `
-                                        <tr>
-                                            <td style="font-weight: 600;">${p.nom}</td>
-                                            <td>${p.matchs}</td>
-                                            <td><span class="stat-badge">${p.points}</span></td>
-                                            <td>${(p.points / p.matchs).toFixed(1)}</td>
-                                            <td>${p.rebonds}</td>
-                                            <td>${p.passes}</td>
-                                            <td>${tirsPerc}%</td>
-                                            <td>${tirs3Perc}%</td>
-                                            <td>${lfPerc}%</td>
-                                            <td>${p.balles_perdues}</td>
-                                            <td>${p.interceptions}</td>
-                                            <td>${p.contres}</td>
-                                            <td>${p.fautes}</td>
-                                            <td>${p.evaluation}</td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
 
 
         // ========== COACHING IA OLLAMA ==========
