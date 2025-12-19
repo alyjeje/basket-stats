@@ -1577,7 +1577,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf' ou 'macron'
+        let currentView = 'matches'; // 'matches', 'csmf', ou 'autres'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1585,6 +1585,13 @@
         // État du tri pour le tableau CSMF
         let csmfSortColumn = 'evaluation'; // Colonne par défaut
         let csmfSortDirection = 'desc'; // 'asc' ou 'desc'
+
+        // Autres équipes
+        let allNonCsmfMatches = [];
+        let selectedTeam = null;
+        let teamMatches = [];
+        let selectedOpponents = [];
+        let teamStatsCache = null;
 
         // Fonction pour obtenir un nom d'équipe court mais lisible
         function getShortTeamName(fullName) {
@@ -1670,9 +1677,9 @@
                     <span class="nav-btn-icon">🏆</span>
                     <span>Stats CSMF</span>
                 </button>
-                <button class="nav-btn ${currentView === 'macron' ? 'active' : ''}" onclick="setView('macron'); closeSidebar();">
-                    <span class="nav-btn-icon">🇫🇷</span>
-                    <span>Emmanuel Macron</span>
+                <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
+                    <span class="nav-btn-icon">👥</span>
+                    <span>Autres Équipes</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -2215,6 +2222,9 @@
             if (view === 'csmf') {
                 // Charger les données CSMF
                 await loadCsmfDataAsync();
+            } else if (view === 'autres') {
+                // Charger les matchs non-CSMF
+                await loadNonCsmfMatches();
             }
             render();
         }
@@ -2247,8 +2257,8 @@
                 contentView = renderMatchesView();
             } else if (currentView === 'csmf') {
                 contentView = renderCsmfViewContent();
-            } else if (currentView === 'macron') {
-                contentView = renderMacronView();
+            } else if (currentView === 'autres') {
+                contentView = renderAutresView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -2812,28 +2822,6 @@
 
                     <div id="csmf-content">
                         ${csmfDataCache ? renderCsmfData(csmfDataCache) : '<div class="loading">⏳ Chargement des statistiques...</div>'}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Vue Emmanuel Macron
-        function renderMacronView() {
-            return `
-                <div class="card" style="text-align: center; padding: 60px 30px;">
-                    <h2 style="color: #1e40af; margin-bottom: 30px;">🇫🇷 Emmanuel Macron</h2>
-                    <div style="margin-bottom: 30px;">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Emmanuel_Macron_in_2019.jpg/400px-Emmanuel_Macron_in_2019.jpg" 
-                             alt="Emmanuel Macron" 
-                             style="max-width: 400px; width: 100%; height: auto; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                    </div>
-                    <p style="color: #64748b; font-size: 1.1em; margin-bottom: 20px;">
-                        Président de la République française
-                    </p>
-                    <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-top: 30px;">
-                        <p style="color: #475569; font-style: italic;">
-                            "Le sport, et particulièrement le basket-ball, rassemble et unit notre nation."
-                        </p>
                     </div>
                 </div>
             `;
@@ -3579,7 +3567,443 @@
         }
 
 
+        // ========== GESTION AUTRES ÉQUIPES ==========
 
+        // Charger tous les matchs non-CSMF
+        async function loadNonCsmfMatches() {
+            const response = await fetch(`${API_URL}/matches`);
+            const result = await response.json();
+
+            if (result.success) {
+                // Filtrer pour ne garder que les matchs sans CSMF
+                allNonCsmfMatches = result.data.filter(m =>
+                    !m.equipe_domicile.includes('CSMF') &&
+                    !m.equipe_exterieur.includes('CSMF')
+                );
+            }
+        }
+
+        // Upload d'un match non-CSMF avec contrôle
+        async function uploadNonCsmfMatch() {
+            const fileInput = document.getElementById('pdfFileAutres');
+            const messageDiv = document.getElementById('uploadMessageAutres');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                messageDiv.className = 'message error show';
+                messageDiv.textContent = '❌ Veuillez sélectionner un fichier PDF';
+                return;
+            }
+
+            const file = fileInput.files[0];
+
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
+                messageDiv.className = 'message error show';
+                messageDiv.textContent = '❌ Seuls les fichiers PDF sont acceptés';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            messageDiv.className = 'message show';
+            messageDiv.innerHTML = '<span class="loading"></span> Vérification et import...';
+
+            try {
+                const response = await fetch(`${API_URL}/matches/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Vérifier si le match contient CSMF
+                    const match = result.match;
+                    if (match.equipe_domicile.includes('CSMF') || match.equipe_exterieur.includes('CSMF')) {
+                        // Supprimer le match de la base
+                        await fetch(`${API_URL}/matches/${result.match_id}`, { method: 'DELETE' });
+
+                        messageDiv.className = 'message error show';
+                        messageDiv.textContent = '❌ Ce match contient le CSMF ! Utilisez l\'onglet "Analyse par Match"';
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    messageDiv.className = 'message success show';
+                    messageDiv.textContent = '✅ Match importé avec succès !';
+                    fileInput.value = '';
+
+                    await loadNonCsmfMatches();
+                    render();
+
+                    setTimeout(() => {
+                        messageDiv.className = 'message';
+                    }, 3000);
+                } else {
+                    messageDiv.className = 'message error show';
+                    messageDiv.textContent = '❌ Erreur: ' + result.error;
+                }
+            } catch (error) {
+                messageDiv.className = 'message error show';
+                messageDiv.textContent = '❌ Erreur lors de l\'upload: ' + error.message;
+            }
+        }
+
+        // Supprimer un match non-CSMF
+        async function deleteNonCsmfMatch(matchId, event) {
+            event.stopPropagation();
+
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce match ?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/matches/${matchId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Match supprimé avec succès !');
+                    await loadNonCsmfMatches();
+
+                    // Réinitialiser si c'était l'équipe sélectionnée
+                    if (selectedTeam) {
+                        await selectTeam(selectedTeam);
+                    }
+
+                    render();
+                } else {
+                    alert('❌ Erreur: ' + result.error);
+                }
+            } catch (error) {
+                alert('❌ Erreur lors de la suppression: ' + error.message);
+            }
+        }
+
+        // Obtenir la liste des équipes uniques
+        function getUniqueTeams() {
+            const teams = new Set();
+            allNonCsmfMatches.forEach(m => {
+                teams.add(m.equipe_domicile);
+                teams.add(m.equipe_exterieur);
+            });
+            return Array.from(teams).sort();
+        }
+
+        // Sélectionner une équipe
+        async function selectTeam(teamName) {
+            selectedTeam = teamName;
+
+            // Charger les matchs de cette équipe
+            teamMatches = allNonCsmfMatches.filter(m =>
+                m.equipe_domicile === teamName || m.equipe_exterieur === teamName
+            );
+
+            // Par défaut, sélectionner tous les adversaires
+            const opponents = new Set();
+            teamMatches.forEach(m => {
+                const opponent = m.equipe_domicile === teamName ? m.equipe_exterieur : m.equipe_domicile;
+                opponents.add(opponent);
+            });
+            selectedOpponents = Array.from(opponents);
+
+            // Charger les stats de l'équipe
+            await loadTeamData();
+            render();
+        }
+
+        // Charger les données d'une équipe
+        async function loadTeamData() {
+            if (!selectedTeam) return;
+
+            const teamPlayers = {};
+
+            // Filtrer les matchs selon les adversaires sélectionnés
+            const filteredMatches = teamMatches.filter(m => {
+                const opponent = m.equipe_domicile === selectedTeam ? m.equipe_exterieur : m.equipe_domicile;
+                return selectedOpponents.includes(opponent);
+            });
+
+            for (const match of filteredMatches) {
+                const response = await fetch(`${API_URL}/matches/${match.id}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    const matchData = result.data;
+                    const players = matchData.stats_joueuses || [];
+
+                    // Filtrer les joueuses de l'équipe sélectionnée
+                    players.forEach(p => {
+                        if (p.equipe.includes(selectedTeam.split(' ')[0])) {
+                            const lastName = getLastName(p.nom);
+
+                            if (!teamPlayers[lastName]) {
+                                teamPlayers[lastName] = {
+                                    nom: p.nom,
+                                    matchs: 0,
+                                    points: 0,
+                                    rebonds: 0,
+                                    passes: 0,
+                                    tirs_reussis: 0,
+                                    tirs_tentes: 0,
+                                    tirs_2pts_reussis: 0,
+                                    tirs_2pts_tentes: 0,
+                                    tirs_3pts_reussis: 0,
+                                    tirs_3pts_tentes: 0,
+                                    lf_reussis: 0,
+                                    lf_tentes: 0,
+                                    balles_perdues: 0,
+                                    interceptions: 0,
+                                    contres: 0,
+                                    fautes: 0,
+                                    evaluation: 0
+                                };
+                            }
+
+                            teamPlayers[lastName].matchs++;
+                            teamPlayers[lastName].points += p.points || 0;
+                            teamPlayers[lastName].rebonds += p.rebonds_total || 0;
+                            teamPlayers[lastName].passes += p.passes_decisives || 0;
+                            teamPlayers[lastName].tirs_reussis += p.tirs_reussis || 0;
+                            teamPlayers[lastName].tirs_tentes += p.tirs_tentes || 0;
+                            teamPlayers[lastName].tirs_2pts_reussis += p.tirs_2pts_reussis || 0;
+                            teamPlayers[lastName].tirs_2pts_tentes += p.tirs_2pts_tentes || 0;
+                            teamPlayers[lastName].tirs_3pts_reussis += p.tirs_3pts_reussis || 0;
+                            teamPlayers[lastName].tirs_3pts_tentes += p.tirs_3pts_tentes || 0;
+                            teamPlayers[lastName].lf_reussis += p.lf_reussis || 0;
+                            teamPlayers[lastName].lf_tentes += p.lf_tentes || 0;
+                            teamPlayers[lastName].balles_perdues += p.balles_perdues || 0;
+                            teamPlayers[lastName].interceptions += p.interceptions || 0;
+                            teamPlayers[lastName].contres += p.contres || 0;
+                            teamPlayers[lastName].fautes += p.fautes || 0;
+                            teamPlayers[lastName].evaluation += p.evaluation || 0;
+                        }
+                    });
+                }
+            }
+
+            teamStatsCache = Object.values(teamPlayers);
+        }
+
+        // Helper pour extraire le nom de famille
+        function getLastName(fullName) {
+            if (!fullName) return '';
+            const parts = fullName.trim().split(/\s+/);
+            return parts[parts.length - 1];
+        }
+
+        // Toggle un adversaire
+        async function toggleOpponent(opponent) {
+            const index = selectedOpponents.indexOf(opponent);
+            if (index > -1) {
+                selectedOpponents.splice(index, 1);
+            } else {
+                selectedOpponents.push(opponent);
+            }
+            await loadTeamData();
+            render();
+        }
+
+        // Toggle tous les adversaires
+        async function toggleAllOpponents(checkbox) {
+            if (checkbox.checked) {
+                const opponents = new Set();
+                teamMatches.forEach(m => {
+                    const opponent = m.equipe_domicile === selectedTeam ? m.equipe_exterieur : m.equipe_domicile;
+                    opponents.add(opponent);
+                });
+                selectedOpponents = Array.from(opponents);
+            } else {
+                selectedOpponents = [];
+            }
+            await loadTeamData();
+            render();
+        }
+
+        // Vue principale Autres Équipes
+        function renderAutresView() {
+            const teams = getUniqueTeams();
+
+            return `
+                <div class="card">
+                    <h2>🔍 Analyse des Autres Équipes</h2>
+
+                    <!-- Section d'upload -->
+                    <div class="upload-section">
+                        <h3>➕ Ajouter un match (sans CSMF)</h3>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="pdfFileAutres" accept=".pdf" />
+                            <button class="btn btn-primary" onclick="uploadNonCsmfMatch()">
+                                📤 Importer le PDF
+                            </button>
+                        </div>
+                        <div id="uploadMessageAutres" class="message"></div>
+                        <p style="color: #999; font-size: 13px; margin-top: 10px;">
+                            ⚠️ Les matchs contenant le CSMF seront automatiquement rejetés
+                        </p>
+                    </div>
+
+                    <!-- Liste des matchs non-CSMF -->
+                    <h3 style="margin-top: 30px;">📋 Matchs disponibles (${allNonCsmfMatches.length})</h3>
+                    ${allNonCsmfMatches.length > 0 ? `
+                        <div class="match-selector">
+                            ${allNonCsmfMatches.map(m => `
+                                <div style="position: relative;">
+                                    <button class="match-btn" style="width: 100%; text-align: left; cursor: default;">
+                                        ${m.equipe_domicile} vs ${m.equipe_exterieur}
+                                        <br><small>${m.date} • ${m.score_domicile}-${m.score_exterieur}</small>
+                                    </button>
+                                    <button class="btn btn-danger btn-small"
+                                            onclick="deleteNonCsmfMatch(${m.id}, event)"
+                                            style="position: absolute; top: 5px; right: 5px;">
+                                        🗑️
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : '<p style="color: #999;">Aucun match importé</p>'}
+
+                    ${teams.length > 0 ? `
+                        <!-- Sélection d'équipe -->
+                        <h3 style="margin-top: 30px;">🎯 Sélectionner une équipe à analyser</h3>
+                        <select onchange="selectTeam(this.value)" style="width: 100%; padding: 10px; font-size: 16px;">
+                            <option value="">-- Choisir une équipe --</option>
+                            ${teams.map(t => `
+                                <option value="${t}" ${selectedTeam === t ? 'selected' : ''}>${t}</option>
+                            `).join('')}
+                        </select>
+
+                        ${selectedTeam ? renderTeamAnalysis() : ''}
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        // Analyse de l'équipe sélectionnée
+        function renderTeamAnalysis() {
+            // Liste des adversaires
+            const opponents = new Set();
+            teamMatches.forEach(m => {
+                const opponent = m.equipe_domicile === selectedTeam ? m.equipe_exterieur : m.equipe_domicile;
+                opponents.add(opponent);
+            });
+            const allOpponents = Array.from(opponents);
+
+            return `
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9ff; border-radius: 10px;">
+                    <h3>📊 Analyse de ${selectedTeam}</h3>
+                    <p style="color: #666;">${teamMatches.length} match(s) disponible(s)</p>
+
+                    <!-- Filtrage par adversaire -->
+                    <div style="margin: 20px 0;">
+                        <h4>Filtrer par adversaire :</h4>
+                        <div class="checkbox-group" style="margin-top: 10px;">
+                            <label class="checkbox-label">
+                                <input type="checkbox"
+                                       ${selectedOpponents.length === allOpponents.length ? 'checked' : ''}
+                                       onchange="toggleAllOpponents(this)">
+                                Tous les adversaires
+                            </label>
+                            ${allOpponents.map(opp => `
+                                <label class="checkbox-label">
+                                    <input type="checkbox"
+                                           ${selectedOpponents.includes(opp) ? 'checked' : ''}
+                                           onchange="toggleOpponent('${opp}')">
+                                    ${opp}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    ${selectedOpponents.length > 0 && teamStatsCache ? renderTeamStats() : '<p style="color: #999;">Sélectionnez au moins un adversaire</p>'}
+                </div>
+            `;
+        }
+
+        // Stats globales de l'équipe
+        function renderTeamStats() {
+            if (!teamStatsCache || teamStatsCache.length === 0) {
+                return '<p style="color: #999;">Aucune statistique disponible</p>';
+            }
+
+            // Calculer les stats globales
+            const totalPoints = teamStatsCache.reduce((sum, p) => sum + p.points, 0);
+            const totalMatches = selectedOpponents.length;
+            const avgPoints = (totalPoints / totalMatches).toFixed(1);
+
+            return `
+                <div style="margin-top: 20px;">
+                    <div class="summary-stats">
+                        <h3>Résumé</h3>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="label">Matchs analysés</div>
+                                <div class="value">${totalMatches}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="label">Points marqués</div>
+                                <div class="value">${totalPoints}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="label">Moyenne / match</div>
+                                <div class="value">${avgPoints}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 30px;">👥 Statistiques des Joueuses</h3>
+                    <div class="scroll-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Joueuse</th>
+                                    <th>Matchs</th>
+                                    <th>PTS</th>
+                                    <th>Moy PTS</th>
+                                    <th>REB</th>
+                                    <th>PD</th>
+                                    <th>Tirs %</th>
+                                    <th>3pts %</th>
+                                    <th>LF %</th>
+                                    <th>BP</th>
+                                    <th>INT</th>
+                                    <th>CTR</th>
+                                    <th>FT</th>
+                                    <th>EVAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${teamStatsCache.sort((a, b) => b.points - a.points).map(p => {
+                                    const tirsPerc = p.tirs_tentes > 0 ? ((p.tirs_reussis / p.tirs_tentes) * 100).toFixed(1) : 0;
+                                    const tirs3Perc = p.tirs_3pts_tentes > 0 ? ((p.tirs_3pts_reussis / p.tirs_3pts_tentes) * 100).toFixed(1) : 0;
+                                    const lfPerc = p.lf_tentes > 0 ? ((p.lf_reussis / p.lf_tentes) * 100).toFixed(1) : 0;
+
+                                    return `
+                                        <tr>
+                                            <td style="font-weight: 600;">${p.nom}</td>
+                                            <td>${p.matchs}</td>
+                                            <td><span class="stat-badge">${p.points}</span></td>
+                                            <td>${(p.points / p.matchs).toFixed(1)}</td>
+                                            <td>${p.rebonds}</td>
+                                            <td>${p.passes}</td>
+                                            <td>${tirsPerc}%</td>
+                                            <td>${tirs3Perc}%</td>
+                                            <td>${lfPerc}%</td>
+                                            <td>${p.balles_perdues}</td>
+                                            <td>${p.interceptions}</td>
+                                            <td>${p.contres}</td>
+                                            <td>${p.fautes}</td>
+                                            <td>${p.evaluation}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
 
 
         // ========== COACHING IA OLLAMA ==========
