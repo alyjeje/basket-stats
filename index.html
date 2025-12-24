@@ -1681,10 +1681,6 @@
                     <span class="nav-btn-icon">👥</span>
                     <span>Autres Équipes</span>
                 </button>
-                <button class="nav-btn ${currentView === 'meteo' ? 'active' : ''}" onclick="setView('meteo'); closeSidebar();">
-                    <span class="nav-btn-icon">🌤️</span>
-                    <span>Couleurs du Ciel</span>
-                </button>
             `;
             navEl.innerHTML = navHtml;
 
@@ -2263,8 +2259,6 @@
                 contentView = renderCsmfViewContent();
             } else if (currentView === 'autres') {
                 contentView = renderAutresView();
-            } else if (currentView === 'meteo') {
-                contentView = renderMeteoView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -4734,82 +4728,7 @@
             }
         }
 
-        // Vue météorologique
-        function renderMeteoView() {
-            return `
-                <div class="card">
-                    <h2>🌤️ Pourquoi le ciel change-t-il de couleur ?</h2>
-                    
-                    <div style="background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%); padding: 30px; border-radius: 15px; margin-bottom: 30px; color: white; text-align: center;">
-                        <h3 style="color: white; margin-bottom: 15px;">🔵 Le Ciel Bleu : Un Phénomène Physique</h3>
-                        <p style="font-size: 1.1em; line-height: 1.6;">La couleur bleue du ciel résulte de la <strong>diffusion de Rayleigh</strong>, un phénomène découvert par le physicien Lord Rayleigh.</p>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px;">
-                        <div style="background: #f0f8ff; padding: 25px; border-radius: 15px; border-left: 5px solid #4682B4;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">🔬 La Science Derrière</h3>
-                            <ul style="line-height: 1.8; color: #334155;">
-                                <li><strong>Lumière blanche :</strong> Le soleil émet une lumière contenant toutes les couleurs</li>
-                                <li><strong>Diffusion :</strong> Les molécules d'air dispersent plus la lumière bleue que les autres couleurs</li>
-                                <li><strong>Longueur d'onde :</strong> Le bleu a une longueur d'onde plus courte, donc plus facilement diffusée</li>
-                                <li><strong>Résultat :</strong> Nos yeux perçoivent un ciel bleu par temps clair</li>
-                            </ul>
-                        </div>
-
-                        <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; border-left: 5px solid #6c757d;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">☁️ Pourquoi le Ciel Devient Gris</h3>
-                            <ul style="line-height: 1.8; color: #334155;">
-                                <li><strong>Nuages épais :</strong> Bloquent et diffusent toutes les couleurs uniformément</li>
-                                <li><strong>Gouttelettes d'eau :</strong> Plus grosses que les molécules d'air, elles diffusent toute la lumière</li>
-                                <li><strong>Pollution :</strong> Les particules en suspension créent une brume grisâtre</li>
-                                <li><strong>Humidité :</strong> La vapeur d'eau réduit la visibilité et ternit les couleurs</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div style="background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%); padding: 25px; border-radius: 15px; margin-bottom: 30px; color: white;">
-                        <h3 style="color: white; margin-bottom: 15px;">🌅 Les Autres Couleurs du Ciel</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
-                                <strong>🌅 Lever/Coucher</strong><br>
-                                <small>Rouge/Orange : la lumière traverse plus d'atmosphère</small>
-                            </div>
-                            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
-                                <strong>🌙 Nuit</strong><br>
-                                <small>Noir/Bleu foncé : absence de diffusion lumineuse</small>
-                            </div>
-                            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px;">
-                                <strong>⛈️ Orage</strong><br>
-                                <small>Vert/Jaune : réflexion sur les nuages d'orage</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="background: #e8f4fd; padding: 25px; border-radius: 15px; border: 2px solid #3b82f6;">
-                        <h3 style="color: #1e3a8a; margin-bottom: 15px;">💡 Le Saviez-Vous ?</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                            <div style="color: #334155; line-height: 1.6;">
-                                <strong>🚀 Dans l'espace :</strong> Le ciel est noir car il n'y a pas d'atmosphère pour diffuser la lumière
-                            </div>
-                            <div style="color: #334155; line-height: 1.6;">
-                                <strong>🏔️ En altitude :</strong> Le ciel est plus foncé car l'air est moins dense
-                            </div>
-                            <div style="color: #334155; line-height: 1.6;">
-                                <strong>🌍 Sur Mars :</strong> Le ciel est rougeâtre à cause de la poussière de fer en suspension
-                            </div>
-                            <div style="color: #334155; line-height: 1.6;">
-                                <strong>🔍 Polarisation :</strong> Certains animaux voient la polarisation de la lumière pour s'orienter
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8fafc; border-radius: 10px;">
-                        <p style="color: #64748b; font-style: italic;">"La beauté du ciel réside dans la simplicité de la physique qui gouverne notre univers."</p>
-                        <small style="color: #94a3b8;">- Lord Rayleigh, physicien britannique (1842-1919)</small>
-                    </div>
-                </div>
-            `;
-        }
 
         // Démarrer l'application
         init();
