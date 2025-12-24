@@ -1577,7 +1577,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf', ou 'autres'
+        let currentView = 'matches'; // 'matches', 'csmf', 'autres', ou 'pere-noel'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1680,6 +1680,10 @@
                 <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
                     <span class="nav-btn-icon">👥</span>
                     <span>Autres Équipes</span>
+                </button>
+                <button class="nav-btn ${currentView === 'pere-noel' ? 'active' : ''}" onclick="setView('pere-noel'); closeSidebar();">
+                    <span class="nav-btn-icon">🎅</span>
+                    <span>Père Noël Rouge</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -2259,6 +2263,8 @@
                 contentView = renderCsmfViewContent();
             } else if (currentView === 'autres') {
                 contentView = renderAutresView();
+            } else if (currentView === 'pere-noel') {
+                contentView = renderPereNoelView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -4117,6 +4123,151 @@
             }, 300);
         };
 
+
+        // ========================================
+        // PAGE PÈRE NOËL ROUGE
+        // ========================================
+
+        function renderPereNoelView() {
+            return `
+                <div class="card">
+                    <h2>🎅 Pourquoi le Père Noël est-il habillé en rouge ?</h2>
+                    
+                    <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; padding: 30px; border-radius: 15px; margin: 20px 0; text-align: center;">
+                        <div style="font-size: 4em; margin-bottom: 15px;">🎅</div>
+                        <h3 style="color: white; margin-bottom: 15px;">L'Histoire du Costume Rouge</h3>
+                        <p style="font-size: 1.1em; opacity: 0.9;">Une tradition qui mélange histoire, marketing et culture populaire</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 30px 0;">
+                        
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 15px; border-left: 5px solid #dc2626;">
+                            <h3 style="color: #dc2626; margin-bottom: 15px;">📚 Les Origines Historiques</h3>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                Le Père Noël moderne trouve ses origines dans <strong>Saint Nicolas de Myre</strong>, un évêque du 4ème siècle connu pour sa générosité envers les enfants pauvres.
+                            </p>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                Les évêques portaient traditionnellement des <strong>vêtements rouges</strong> lors des cérémonies religieuses, une couleur symbolisant la dignité et l'autorité spirituelle.
+                            </p>
+                            <p style="line-height: 1.6; color: #64748b; font-style: italic;">
+                                "Saint Nicolas était déjà associé au rouge bien avant l'ère moderne."
+                            </p>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 15px; border-left: 5px solid #059669;">
+                            <h3 style="color: #059669; margin-bottom: 15px;">🎨 L'Évolution Artistique</h3>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                Au 19ème siècle, les illustrateurs comme <strong>Thomas Nast</strong> (1863) ont popularisé l'image d'un Père Noël en costume rouge dans leurs dessins pour Harper's Weekly.
+                            </p>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                Ces représentations ont établi les bases visuelles du personnage moderne, bien avant toute campagne publicitaire.
+                            </p>
+                            <div style="background: rgba(5, 150, 105, 0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                <strong>Fait intéressant :</strong> Nast a aussi créé l'atelier du Pôle Nord et la liste des enfants sages !
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 15px; border-left: 5px solid #7c3aed;">
+                            <h3 style="color: #7c3aed; margin-bottom: 15px;">🥤 Le Rôle de Coca-Cola</h3>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                Contrairement à une idée reçue, <strong>Coca-Cola n'a pas inventé</strong> le Père Noël rouge. La marque a utilisé cette image à partir de 1931 dans ses campagnes publicitaires.
+                            </p>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                L'illustrateur <strong>Haddon Sundblom</strong> a créé pour Coca-Cola des représentations qui ont largement contribué à standardiser l'apparence moderne du Père Noël.
+                            </p>
+                            <div style="background: rgba(124, 58, 237, 0.1); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                                <strong>Impact :</strong> Ces campagnes ont rendu l'image du Père Noël rouge universellement reconnaissable.
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 15px; border-left: 5px solid #ea580c;">
+                            <h3 style="color: #ea580c; margin-bottom: 15px;">🌍 Variations Culturelles</h3>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                Avant la standardisation, le Père Noël était représenté dans différentes couleurs selon les régions :
+                            </p>
+                            <ul style="line-height: 1.6; margin-left: 20px;">
+                                <li><strong>Vert</strong> en Angleterre (Father Christmas)</li>
+                                <li><strong>Bleu</strong> dans certaines régions d'Europe</li>
+                                <li><strong>Blanc</strong> dans les pays nordiques</li>
+                                <li><strong>Marron</strong> dans certaines traditions allemandes</li>
+                            </ul>
+                            <p style="line-height: 1.6; margin-top: 15px; color: #64748b; font-style: italic;">
+                                Le rouge s'est imposé progressivement comme la couleur dominante au 20ème siècle.
+                            </p>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 15px; border-left: 5px solid #0891b2;">
+                            <h3 style="color: #0891b2; margin-bottom: 15px;">🔍 Symbolisme du Rouge</h3>
+                            <p style="line-height: 1.6; margin-bottom: 15px;">
+                                La couleur rouge dans le contexte du Père Noël symbolise :
+                            </p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+                                <div style="background: rgba(8, 145, 178, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                    <strong>❤️ L'Amour</strong><br>
+                                    <small>et la générosité</small>
+                                </div>
+                                <div style="background: rgba(8, 145, 178, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                    <strong>🔥 La Chaleur</strong><br>
+                                    <small>du foyer familial</small>
+                                </div>
+                                <div style="background: rgba(8, 145, 178, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                    <strong>🎉 La Joie</strong><br>
+                                    <small>des fêtes</small>
+                                </div>
+                                <div style="background: rgba(8, 145, 178, 0.1); padding: 10px; border-radius: 6px; text-align: center;">
+                                    <strong>👑 La Dignité</strong><br>
+                                    <small>spirituelle</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 15px; border-left: 5px solid #be185d;">
+                            <h3 style="color: #be185d; margin-bottom: 15px;">📖 Chronologie Résumée</h3>
+                            <div style="position: relative; padding-left: 20px;">
+                                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: #be185d;"></div>
+                                
+                                <div style="margin-bottom: 20px; position: relative;">
+                                    <div style="position: absolute; left: -8px; top: 5px; width: 16px; height: 16px; background: #be185d; border-radius: 50%;"></div>
+                                    <strong>IVe siècle</strong> - Saint Nicolas, évêque en rouge<br>
+                                    <small style="color: #64748b;">Origines religieuses de la couleur</small>
+                                </div>
+                                
+                                <div style="margin-bottom: 20px; position: relative;">
+                                    <div style="position: absolute; left: -8px; top: 5px; width: 16px; height: 16px; background: #be185d; border-radius: 50%;"></div>
+                                    <strong>1863</strong> - Illustrations de Thomas Nast<br>
+                                    <small style="color: #64748b;">Standardisation artistique</small>
+                                </div>
+                                
+                                <div style="margin-bottom: 20px; position: relative;">
+                                    <div style="position: absolute; left: -8px; top: 5px; width: 16px; height: 16px; background: #be185d; border-radius: 50%;"></div>
+                                    <strong>1931</strong> - Campagnes Coca-Cola<br>
+                                    <small style="color: #64748b;">Diffusion mondiale de l'image</small>
+                                </div>
+                                
+                                <div style="position: relative;">
+                                    <div style="position: absolute; left: -8px; top: 5px; width: 16px; height: 16px; background: #be185d; border-radius: 50%;"></div>
+                                    <strong>Aujourd'hui</strong> - Image universelle<br>
+                                    <small style="color: #64748b;">Le rouge comme standard mondial</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color: white; padding: 25px; border-radius: 15px; margin: 30px 0; text-align: center;">
+                        <h3 style="color: white; margin-bottom: 15px;">🎯 En Résumé</h3>
+                        <p style="font-size: 1.1em; line-height: 1.6; margin-bottom: 0;">
+                            Le rouge du Père Noël résulte d'une <strong>évolution historique naturelle</strong> : des origines religieuses de Saint Nicolas aux représentations artistiques du 19ème siècle, puis à la popularisation par la publicité du 20ème siècle. Cette couleur n'est pas le fruit d'une invention marketing, mais l'aboutissement d'une tradition séculaire qui a su s'adapter à l'époque moderne.
+                        </p>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f1f5f9; border-radius: 10px;">
+                        <p style="color: #64748b; font-style: italic; margin: 0;">
+                            "La magie de Noël réside aussi dans ces petites histoires qui donnent du sens à nos traditions." 🎄
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
 
         // ========================================
         // PAGE DÉDIÉE JOUEUSE (Style NBA)
