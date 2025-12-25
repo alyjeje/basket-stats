@@ -1682,6 +1682,10 @@
                     <span class="nav-btn-icon">👥</span>
                     <span>Autres Équipes</span>
                 </button>
+                <button class="nav-btn ${currentView === 'neptune' ? 'active' : ''}" onclick="setView('neptune'); closeSidebar();">
+                    <span class="nav-btn-icon">🪐</span>
+                    <span>Neptune</span>
+                </button>
             `;
             navEl.innerHTML = navHtml;
 
@@ -3826,6 +3830,8 @@
             render();
         }
 
+
+
         // Vue principale Autres Équipes
         function renderAutresView() {
             const teams = getUniqueTeams();
@@ -3956,9 +3962,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Vue Neptune -->
-                    ${renderNeptuneView()}
 
                     <h3 style="margin-top: 30px;">👥 Statistiques des Joueuses</h3>
                     <div class="scroll-table">
