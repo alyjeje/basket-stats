@@ -393,12 +393,13 @@ class DatabaseManager:
                 return [dict(row) for row in cursor.fetchall()]
     
     def get_player_stats(self, player_name):
-        """Récupère toutes les stats d'une joueuse"""
+        """Récupère toutes les stats d'une joueuse avec temps moyen"""
         with self.get_connection() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute('''
                     SELECT sj.*, m.date, m.equipe_domicile, m.equipe_exterieur, 
-                           m.score_domicile, m.score_exterieur
+                           m.score_domicile, m.score_exterieur,
+                           AVG(sj.minutes) OVER() as temps_moyen
                     FROM stats_joueuses sj
                     JOIN matchs m ON sj.match_id = m.id
                     WHERE sj.nom ILIKE %s
