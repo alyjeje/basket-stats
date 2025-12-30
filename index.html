@@ -1682,6 +1682,10 @@
                     <span class="nav-btn-icon">👥</span>
                     <span>Autres Équipes</span>
                 </button>
+                <button class="nav-btn ${currentView === 'pere-noel' ? 'active' : ''}" onclick="setView('pere-noel'); closeSidebar();">
+                    <span class="nav-btn-icon">🎅</span>
+                    <span>Origine du Père Noël</span>
+                </button>
             `;
             navEl.innerHTML = navHtml;
 
@@ -2260,6 +2264,8 @@
                 contentView = renderCsmfViewContent();
             } else if (currentView === 'autres') {
                 contentView = renderAutresView();
+            } else if (currentView === 'pere-noel') {
+                contentView = renderPereNoelView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -3823,6 +3829,99 @@
         }
 
 
+
+        // Vue Origine du Père Noël
+        function renderPereNoelView() {
+            return `
+                <div class="card">
+                    <h2>🎅 L'Origine du Père Noël</h2>
+                    
+                    <div style="background: linear-gradient(135deg, #dc2626 0%, #16a34a 100%); padding: 30px; border-radius: 15px; color: white; margin-bottom: 30px; text-align: center;">
+                        <div style="font-size: 4em; margin-bottom: 15px;">🎅</div>
+                        <h3 style="color: white; margin: 0;">Une légende qui traverse les siècles</h3>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px;">
+                        <div class="card" style="background: #f0f9ff; border: 2px solid #3b82f6;">
+                            <h3 style="color: #1e40af; margin-bottom: 15px;">⛪ Saint Nicolas (IVe siècle)</h3>
+                            <p>Le Père Noël trouve ses origines dans la figure de <strong>Saint Nicolas de Myre</strong>, évêque du IVe siècle en Asie Mineure (actuelle Turquie). Réputé pour sa générosité envers les enfants et les plus démunis, il devient rapidement une figure vénérée.</p>
+                            <p style="color: #1e40af; font-weight: 600;">🎁 Patron des enfants et des marins</p>
+                        </div>
+                        
+                        <div class="card" style="background: #fef3c7; border: 2px solid #f59e0b;">
+                            <h3 style="color: #92400e; margin-bottom: 15px;">🇳🇱 Sinterklaas aux Pays-Bas</h3>
+                            <p>Au Moyen Âge, la tradition de Saint Nicolas se développe particulièrement aux Pays-Bas sous le nom de <strong>Sinterklaas</strong>. Il distribue des cadeaux aux enfants sages le 6 décembre, accompagné de son aide Zwarte Piet.</p>
+                            <p style="color: #92400e; font-weight: 600;">🎪 Tradition vivace encore aujourd'hui</p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="background: #ecfdf5; border: 2px solid #10b981; margin-bottom: 30px;">
+                        <h3 style="color: #065f46; margin-bottom: 20px;">🇺🇸 La transformation américaine (XIXe siècle)</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                            <div>
+                                <h4 style="color: #047857;">📖 Washington Irving (1809)</h4>
+                                <p>L'écrivain américain popularise "Santa Claus" dans ses écrits, transformant Sinterklaas en une figure plus joviale et accessible.</p>
+                            </div>
+                            <div>
+                                <h4 style="color: #047857;">🎨 Thomas Nast (1863)</h4>
+                                <p>L'illustrateur dessine pour la première fois le Père Noël moderne : barbe blanche, costume rouge, atelier au Pôle Nord avec des elfes.</p>
+                            </div>
+                            <div>
+                                <h4 style="color: #047857;">🥤 Coca-Cola (1930s)</h4>
+                                <p>Les publicités de Haddon Sundblom pour Coca-Cola fixent définitivement l'image du Père Noël : bonhomme joufflu en costume rouge et blanc.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px;">
+                        <div class="card" style="background: #fdf2f8; border: 2px solid #ec4899;">
+                            <h3 style="color: #be185d; margin-bottom: 15px;">🌍 Diffusion mondiale</h3>
+                            <ul style="color: #831843; line-height: 1.6;">
+                                <li><strong>France :</strong> "Père Noël" remplace progressivement "Père Janvier"</li>
+                                <li><strong>Royaume-Uni :</strong> "Father Christmas" fusionne avec Santa Claus</li>
+                                <li><strong>Allemagne :</strong> Coexistence avec le Christkind</li>
+                                <li><strong>Scandinavie :</strong> Adaptation des traditions locales</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="card" style="background: #f3f4f6; border: 2px solid #6b7280;">
+                            <h3 style="color: #374151; margin-bottom: 15px;">🎭 Évolution moderne</h3>
+                            <ul style="color: #4b5563; line-height: 1.6;">
+                                <li><strong>Cinéma :</strong> Films et dessins animés renforcent le mythe</li>
+                                <li><strong>Commerce :</strong> Figure centrale du marketing de Noël</li>
+                                <li><strong>Internet :</strong> Tracking NORAD, emails au Père Noël</li>
+                                <li><strong>Parcs d'attractions :</strong> Villages et maisons du Père Noël</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="coaching-card" style="background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);">
+                        <h2 style="color: white;">✨ Le Père Noël aujourd'hui</h2>
+                        <div class="coaching-summary">Une figure universelle de générosité et de magie</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 25px;">
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2.5em; margin-bottom: 10px;">🎁</div>
+                                <h4 style="color: white; margin: 0;">Symbole de générosité</h4>
+                                <p style="color: rgba(255,255,255,0.9); font-size: 0.9em; margin-top: 8px;">Incarne l'esprit de partage et de bienveillance</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2.5em; margin-bottom: 10px;">👨‍👩‍👧‍👦</div>
+                                <h4 style="color: white; margin: 0;">Tradition familiale</h4>
+                                <p style="color: rgba(255,255,255,0.9); font-size: 0.9em; margin-top: 8px;">Rassemble les familles autour de la magie de Noël</p>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center;">
+                                <div style="font-size: 2.5em; margin-bottom: 10px;">🌟</div>
+                                <h4 style="color: white; margin: 0;">Magie de l'enfance</h4>
+                                <p style="color: rgba(255,255,255,0.9); font-size: 0.9em; margin-top: 8px;">Préserve l'émerveillement et l'innocence</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.2); text-align: center;">
+                            <p style="color: rgba(255,255,255,0.9); font-style: italic;">"Ho ho ho ! Joyeux Noël à tous ! 🎅"</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
 
         // Vue principale Autres Équipes
         function renderAutresView() {
