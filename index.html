@@ -3137,7 +3137,8 @@
                                     fautes: 0,
                                     fautes_provoquees: 0,
                                     plus_moins: 0,
-                                    evaluation: 0
+                                    evaluation: 0,
+                                    minutes: 0
                                 };
                                 console.log(`  ✨ Première occurrence: ${p.nom} → clé: ${lastName}`);
                             } else {
@@ -3167,6 +3168,7 @@
                             csmfPlayers[lastName].fautes_provoquees += p.fautes_provoquees || 0;
                             csmfPlayers[lastName].plus_moins += p.plus_moins || 0;
                             csmfPlayers[lastName].evaluation += p.evaluation || 0;
+                            csmfPlayers[lastName].minutes = (csmfPlayers[lastName].minutes || 0) + (p.minutes || 0);
                         }
                     });
 
@@ -3411,6 +3413,7 @@
                                 <th class="${sortClass('fautes')}" onclick="sortCsmfTable('fautes')">Moy F</th>
                                 <th class="${sortClass('fautes_provoquees')}" onclick="sortCsmfTable('fautes_provoquees')">Moy FP</th>
                                 <th class="${sortClass('plus_moins')}" onclick="sortCsmfTable('plus_moins')">Moy +/-</th>
+                                <th class="${sortClass('minutes')}" onclick="sortCsmfTable('minutes')">Moy MIN</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -3441,6 +3444,7 @@
                                         <td>${(p.fautes / p.matchs).toFixed(1)}</td>
                                         <td>${(p.fautes_provoquees / p.matchs).toFixed(1)}</td>
                                         <td>${(p.plus_moins / p.matchs).toFixed(1)}</td>
+                                        <td>${((p.minutes || 0) / p.matchs).toFixed(1)}</td>
                                     </tr>
                                 `;
                             }).join('')}
@@ -3464,6 +3468,7 @@
                                 <td>${(totals.fautes / totals.matchs).toFixed(1)}</td>
                                 <td>${(totals.fautes_provoquees / totals.matchs).toFixed(1)}</td>
                                 <td>${(totals.plus_moins / totals.matchs).toFixed(1)}</td>
+                                <td>${((totals.minutes || 0) / totals.matchs).toFixed(1)}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -4342,6 +4347,7 @@
             const avgPD = (playerData.reduce((s, p) => s + (p.passes_decisives || 0), 0) / totalMatchs).toFixed(1);
             const avgBP = (playerData.reduce((s, p) => s + (p.balles_perdues || 0), 0) / totalMatchs).toFixed(1);
             const avgINT = (playerData.reduce((s, p) => s + (p.interceptions || 0), 0) / totalMatchs).toFixed(1);
+            const avgMinutes = (playerData.reduce((s, p) => s + (p.minutes || 0), 0) / totalMatchs).toFixed(1);
             const victoires = playerData.filter(p => p.victoire).length;
             const defaites = totalMatchs - victoires;
 
@@ -4397,6 +4403,10 @@
                         <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; text-align: center;">
                             <div style="font-size: 36px; font-weight: bold; color: white;">${avgPD}</div>
                             <div style="color: #aaa; font-size: 14px; margin-top: 8px;">PD</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; text-align: center;">
+                            <div style="font-size: 36px; font-weight: bold; color: #17a2b8;">${avgMinutes}</div>
+                            <div style="color: #aaa; font-size: 14px; margin-top: 8px;">MIN</div>
                         </div>
                         <div style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; text-align: center;">
                             <div style="font-size: 36px; font-weight: bold; color: white;">${pctTirs}%</div>
