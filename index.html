@@ -1583,6 +1583,8 @@
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
         let upcomingMatches = [];
+        let vacancesScolaires = [];
+        let showVacances = true; // Toggle pour afficher/masquer les vacances
 
         // État du tri pour le tableau CSMF
         let csmfSortColumn = 'evaluation'; // Colonne par défaut
@@ -1631,6 +1633,7 @@
         async function init() {
             try {
                 await loadMatches();
+                await loadVacancesScolaires();
             } catch (error) {
                 showError('Erreur de chargement des données: ' + error.message);
             }
@@ -3605,12 +3608,68 @@
             }
         }
 
+        // Charger les vacances scolaires
+        async function loadVacancesScolaires() {
+            try {
+                const response = await fetch(`${API_URL}/vacances`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    vacancesScolaires = result.data || [];
+                    console.log(`✅ Vacances scolaires chargées: ${vacancesScolaires.length} périodes`);
+                } else {
+                    vacancesScolaires = [];
+                    console.error('Erreur lors du chargement des vacances:', result.error);
+                }
+            } catch (error) {
+                vacancesScolaires = [];
+                console.error('Erreur lors du chargement des vacances:', error);
+            }
+        }
+
+        // Vérifier si une date est en vacances scolaires
+        function isDateVacances(dateStr) {
+            if (!dateStr || vacancesScolaires.length === 0) return null;
+            
+            const checkDate = new Date(dateStr);
+            
+            for (const periode of vacancesScolaires) {
+                const startDate = new Date(periode.start_date);
+                const endDate = new Date(periode.end_date);
+                
+                if (checkDate >= startDate && checkDate <= endDate) {
+                    return {
+                        description: periode.description,
+                        start_date: periode.start_date,
+                        end_date: periode.end_date
+                    };
+                }
+            }
+            
+            return null;
+        }
+
         // Vue des matchs à venir
         function renderUpcomingView() {
             return `
                 <div class="card">
-                    <h2>📅 Matchs à Venir</h2>
-                    <p style="color: #666; margin-bottom: 20px;">Calendrier des prochaines rencontres CSMF</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="margin: 0;">📅 Matchs à Venir</h2>
+                            <p style="color: #666; margin: 5px 0 0 0;">Calendrier des prochaines rencontres CSMF</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9em; color: #475569;">
+                                <input type="checkbox" ${showVacances ? 'checked' : ''} onchange="toggleVacances(this.checked)" style="transform: scale(1.2);">
+                                <span>🏖️ Afficher les vacances scolaires</span>
+                            </label>
+                            ${vacancesScolaires.length > 0 ? `
+                                <div style="background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 15px; font-size: 0.8em; border: 1px solid #fbbf24;">
+                                    Zone C - ${vacancesScolaires.length} périodes
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
 
                     ${upcomingMatches.length > 0 ? `
                         <div class="upcoming-matches-list">
@@ -3647,6 +3706,10 @@
             const isHome = match.domicile;
             const opponent = match.adversaire || 'Adversaire';
             
+            // Vérifier si c'est pendant les vacances scolaires
+            const vacancesInfo = showVacances ? isDateVacances(match.date) : null;
+            const isVacances = vacancesInfo !== null;
+            
             return `
                 <div class="upcoming-match-card" style="
                     background: white;
@@ -3666,9 +3729,14 @@
                             <h3 style="margin: 0; color: #1e293b; font-size: 1.3em;">
                                 CSMF vs ${opponent}
                             </h3>
+                            ${isVacances ? `
+                                <div style="margin-top: 8px; display: inline-block; background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 600; border: 1px solid #fbbf24;">
+                                    🏖️ ${vacancesInfo.description.replace('Vacances de ', '').replace('Vacances d\'', '').replace('Vacances ', '')}
+                                </div>
+                            ` : ''}
                         </div>
                         <div style="text-align: right;">
-                            <div style="background: #f1f5f9; color: #475569; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600;">
+                            <div style="background: ${isVacances ? '#fef3c7' : '#f1f5f9'}; color: ${isVacances ? '#92400e' : '#475569'}; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; ${isVacances ? 'border: 1px solid #fbbf24;' : ''}">
                                 ${dateLabel}
                             </div>
                         </div>
@@ -4880,6 +4948,14 @@
 
 
 
+
+        // Toggle affichage des vacances
+        function toggleVacances(show) {
+            showVacances = show;
+            if (currentView === 'upcoming') {
+                render();
+            }
+        }
 
         // Démarrer l'application
         init();
