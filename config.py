@@ -44,6 +44,14 @@ class Config:
     FFBB_PASSWORD = os.getenv('FFBB_PASSWORD', 'hiUjMVDvRi4tfkY2YDe2uzvjqULxJ7Kq')
     
     # ============================================
+    # VACANCES SCOLAIRES
+    # ============================================
+    # Zone académique pour les vacances (Paris = Zone C)
+    VACANCES_ZONE = os.getenv('VACANCES_ZONE', 'C')
+    # Cache des vacances en jours
+    VACANCES_CACHE_DURATION = 24 * 60 * 60  # 24 heures
+    
+    # ============================================
     # APPLICATION
     # ============================================
     TEAM_NAME = os.getenv('TEAM_NAME', 'CSMF')
