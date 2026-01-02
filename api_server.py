@@ -715,6 +715,34 @@ def get_upcoming_matches():
             'error': str(e)
         }), 500
 
+@app.route('/api/matches/upcoming', methods=['GET'])
+def get_upcoming_matches_alt():
+    """Alternative endpoint pour les matchs à venir (fallback si FFBB indisponible)"""
+    try:
+        # Si FFBB disponible, utiliser le cache
+        if ffbb_cache:
+            days = int(request.args.get('days', 60))
+            data = ffbb_cache.get_upcoming_matches(days)
+            return jsonify({
+                'success': True,
+                'data': data,
+                'source': 'ffbb_cache'
+            })
+        
+        # Sinon, retourner une liste vide avec un message
+        return jsonify({
+            'success': True,
+            'data': [],
+            'source': 'fallback',
+            'message': 'Cache FFBB non disponible - aucun match à venir'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @app.route('/api/calendar/results', methods=['GET'])
 def get_recent_results():
     """Récupère les résultats récents"""

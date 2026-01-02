@@ -1578,10 +1578,11 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf', 'autres', ou 'neptune'
+        let currentView = 'matches'; // 'matches', 'csmf', 'autres', 'upcoming'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
+        let upcomingMatches = [];
 
         // État du tri pour le tableau CSMF
         let csmfSortColumn = 'evaluation'; // Colonne par défaut
@@ -1681,6 +1682,10 @@
                 <button class="nav-btn ${currentView === 'autres' ? 'active' : ''}" onclick="setView('autres'); closeSidebar();">
                     <span class="nav-btn-icon">👥</span>
                     <span>Autres Équipes</span>
+                </button>
+                <button class="nav-btn ${currentView === 'upcoming' ? 'active' : ''}" onclick="setView('upcoming'); closeSidebar();">
+                    <span class="nav-btn-icon">📅</span>
+                    <span>Matchs à venir</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -2226,6 +2231,9 @@
             } else if (view === 'autres') {
                 // Charger les matchs non-CSMF
                 await loadNonCsmfMatches();
+            } else if (view === 'upcoming') {
+                // Charger les matchs à venir
+                await loadUpcomingMatches();
             }
             render();
         }
@@ -2260,6 +2268,8 @@
                 contentView = renderCsmfViewContent();
             } else if (currentView === 'autres') {
                 contentView = renderAutresView();
+            } else if (currentView === 'upcoming') {
+                contentView = renderUpcomingView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -3572,6 +3582,128 @@
             // Les événements sont gérés via onclick dans le HTML
         }
 
+
+        // ========== MATCHS À VENIR ==========
+
+        // Charger les matchs à venir depuis l'API FFBB
+        async function loadUpcomingMatches() {
+            try {
+                const response = await fetch(`${API_URL}/calendar/upcoming?days=60`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    upcomingMatches = result.data || [];
+                    // Trier par date croissante (plus proches en premier)
+                    upcomingMatches.sort((a, b) => new Date(a.date) - new Date(b.date));
+                } else {
+                    upcomingMatches = [];
+                    console.error('Erreur lors du chargement des matchs à venir:', result.error);
+                }
+            } catch (error) {
+                upcomingMatches = [];
+                console.error('Erreur lors du chargement des matchs à venir:', error);
+            }
+        }
+
+        // Vue des matchs à venir
+        function renderUpcomingView() {
+            return `
+                <div class="card">
+                    <h2>📅 Matchs à Venir</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Calendrier des prochaines rencontres CSMF</p>
+
+                    ${upcomingMatches.length > 0 ? `
+                        <div class="upcoming-matches-list">
+                            ${upcomingMatches.map(match => renderUpcomingMatchCard(match)).join('')}
+                        </div>
+                    ` : `
+                        <div style="text-align: center; padding: 60px 30px; color: #666;">
+                            <div style="font-size: 4em; margin-bottom: 20px;">📅</div>
+                            <h3 style="margin-bottom: 15px;">Aucun match programmé</h3>
+                            <p>Le calendrier des prochains matchs n'est pas encore disponible.</p>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        // Carte d'un match à venir
+        function renderUpcomingMatchCard(match) {
+            const matchDate = new Date(match.date);
+            const today = new Date();
+            const daysUntil = Math.ceil((matchDate - today) / (1000 * 60 * 60 * 24));
+            
+            let dateLabel = '';
+            if (daysUntil === 0) {
+                dateLabel = "Aujourd'hui";
+            } else if (daysUntil === 1) {
+                dateLabel = "Demain";
+            } else if (daysUntil > 0) {
+                dateLabel = `Dans ${daysUntil} jour${daysUntil > 1 ? 's' : ''}`;
+            } else {
+                dateLabel = "Passé";
+            }
+
+            const isHome = match.domicile;
+            const opponent = match.adversaire || 'Adversaire';
+            
+            return `
+                <div class="upcoming-match-card" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 25px;
+                    margin-bottom: 20px;
+                    border-left: 5px solid ${isHome ? '#28a745' : '#007bff'};
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    transition: transform 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <div style="color: ${isHome ? '#28a745' : '#007bff'}; font-weight: bold; font-size: 0.9em; margin-bottom: 5px;">
+                                ${isHome ? '🏠 DOMICILE' : '✈️ EXTÉRIEUR'}
+                            </div>
+                            <h3 style="margin: 0; color: #1e293b; font-size: 1.3em;">
+                                CSMF vs ${opponent}
+                            </h3>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="background: #f1f5f9; color: #475569; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600;">
+                                ${dateLabel}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #64748b;">📅</span>
+                            <span style="color: #1e293b; font-weight: 500;">${formatDateFrench(match.date, 'long')}</span>
+                        </div>
+                        
+                        ${match.heure ? `
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="color: #64748b;">🕐</span>
+                                <span style="color: #1e293b; font-weight: 500;">${match.heure}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${match.lieu ? `
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="color: #64748b;">📍</span>
+                                <span style="color: #1e293b; font-weight: 500;">${match.lieu}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${match.competition ? `
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="color: #64748b;">🏆</span>
+                                <span style="color: #1e293b; font-weight: 500;">${match.competition}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
 
         // ========== GESTION AUTRES ÉQUIPES ==========
 
