@@ -715,34 +715,6 @@ def get_upcoming_matches():
             'error': str(e)
         }), 500
 
-@app.route('/api/matches/upcoming', methods=['GET'])
-def get_upcoming_matches_alt():
-    """Alternative endpoint pour les matchs à venir (fallback si FFBB indisponible)"""
-    try:
-        # Si FFBB disponible, utiliser le cache
-        if ffbb_cache:
-            days = int(request.args.get('days', 60))
-            data = ffbb_cache.get_upcoming_matches(days)
-            return jsonify({
-                'success': True,
-                'data': data,
-                'source': 'ffbb_cache'
-            })
-        
-        # Sinon, retourner une liste vide avec un message
-        return jsonify({
-            'success': True,
-            'data': [],
-            'source': 'fallback',
-            'message': 'Cache FFBB non disponible - aucun match à venir'
-        })
-        
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
 @app.route('/api/calendar/results', methods=['GET'])
 def get_recent_results():
     """Récupère les résultats récents"""
@@ -801,6 +773,70 @@ def get_calendar_info():
             'success': True,
             'data': info
         })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# ============================================
+# ROUTES VACANCES SCOLAIRES
+# ============================================
+
+@app.route('/api/vacances', methods=['GET'])
+def get_vacances_scolaires():
+    """Récupère les vacances scolaires depuis l'API officielle"""
+    import requests
+    from datetime import datetime, timedelta
+    
+    try:
+        # API officielle du gouvernement français
+        url = "https://data.education.gouv.fr/api/records/1.0/search/"
+        params = {
+            'dataset': 'fr-en-calendrier-scolaire',
+            'rows': 100,
+            'sort': 'start_date',
+            'facet': 'zones',
+            'facet': 'description'
+        }
+        
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        records = data.get('records', [])
+        
+        # Traiter les données
+        vacances = []
+        for record in records:
+            fields = record.get('fields', {})
+            
+            # Filtrer les vacances (exclure les jours fériés isolés)
+            description = fields.get('description', '').lower()
+            if any(keyword in description for keyword in ['vacances', 'congés', 'pont']):
+                vacances.append({
+                    'nom': fields.get('description', ''),
+                    'debut': fields.get('start_date', ''),
+                    'fin': fields.get('end_date', ''),
+                    'zones': fields.get('zones', []),
+                    'annee_scolaire': fields.get('annee_scolaire', ''),
+                    'population': fields.get('population', '')
+                })
+        
+        # Trier par date de début
+        vacances.sort(key=lambda x: x['debut'])
+        
+        return jsonify({
+            'success': True,
+            'data': vacances,
+            'total': len(vacances)
+        })
+        
+    except requests.RequestException as e:
+        return jsonify({
+            'success': False,
+            'error': f'Erreur lors de la récupération des données: {str(e)}'
+        }), 500
     except Exception as e:
         return jsonify({
             'success': False,
