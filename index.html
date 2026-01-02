@@ -1578,7 +1578,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf', 'autres', 'upcoming'
+        let currentView = 'matches'; // 'matches', 'csmf', 'autres', 'upcoming', 'vacances'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1594,6 +1594,11 @@
         let teamMatches = [];
         let selectedOpponents = [];
         let teamStatsCache = null;
+
+        // Vacances scolaires
+        let vacancesData = [];
+        let selectedZones = ['Zone A', 'Zone B', 'Zone C'];
+        let selectedAnnee = null;
 
         // Fonction pour obtenir un nom d'équipe court mais lisible
         function getShortTeamName(fullName) {
@@ -1686,6 +1691,10 @@
                 <button class="nav-btn ${currentView === 'upcoming' ? 'active' : ''}" onclick="setView('upcoming'); closeSidebar();">
                     <span class="nav-btn-icon">📅</span>
                     <span>Matchs à venir</span>
+                </button>
+                <button class="nav-btn ${currentView === 'vacances' ? 'active' : ''}" onclick="setView('vacances'); closeSidebar();">
+                    <span class="nav-btn-icon">🏖️</span>
+                    <span>Vacances Scolaires</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -2234,6 +2243,9 @@
             } else if (view === 'upcoming') {
                 // Charger les matchs à venir
                 await loadUpcomingMatches();
+            } else if (view === 'vacances') {
+                // Charger les vacances scolaires
+                await loadVacancesScolaires();
             }
             render();
         }
@@ -2270,6 +2282,8 @@
                 contentView = renderAutresView();
             } else if (currentView === 'upcoming') {
                 contentView = renderUpcomingView();
+            } else if (currentView === 'vacances') {
+                contentView = renderVacancesView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -3605,6 +3619,32 @@
             }
         }
 
+        // ========== VACANCES SCOLAIRES ==========
+
+        // Charger les vacances scolaires depuis l'API
+        async function loadVacancesScolaires() {
+            try {
+                const response = await fetch(`${API_URL}/vacances`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    vacancesData = result.data || [];
+                    
+                    // Extraire les années scolaires disponibles
+                    const annees = [...new Set(vacancesData.map(v => v.annee_scolaire).filter(a => a))];
+                    if (annees.length > 0 && !selectedAnnee) {
+                        selectedAnnee = annees.sort().reverse()[0]; // Année la plus récente
+                    }
+                } else {
+                    vacancesData = [];
+                    console.error('Erreur lors du chargement des vacances:', result.error);
+                }
+            } catch (error) {
+                vacancesData = [];
+                console.error('Erreur lors du chargement des vacances:', error);
+            }
+        }
+
         // Vue des matchs à venir
         function renderUpcomingView() {
             return `
@@ -3703,6 +3743,199 @@
                     </div>
                 </div>
             `;
+        }
+
+        // Vue des vacances scolaires
+        function renderVacancesView() {
+            return `
+                <div class="card">
+                    <h2>🏖️ Vacances Scolaires</h2>
+                    <p style="color: #666; margin-bottom: 20px;">Calendrier officiel des vacances scolaires par zone</p>
+
+                    ${renderVacancesFilters()}
+
+                    ${vacancesData.length > 0 ? renderVacancesContent() : `
+                        <div style="text-align: center; padding: 60px 30px; color: #666;">
+                            <div style="font-size: 4em; margin-bottom: 20px;">🏖️</div>
+                            <h3 style="margin-bottom: 15px;">Chargement des vacances...</h3>
+                            <p>Récupération des données depuis l'API officielle</p>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        // Filtres pour les vacances
+        function renderVacancesFilters() {
+            const annees = [...new Set(vacancesData.map(v => v.annee_scolaire).filter(a => a))].sort().reverse();
+            
+            return `
+                <div class="filters" style="margin-bottom: 30px;">
+                    <div class="filter-group">
+                        <label>Année scolaire :</label>
+                        <select onchange="selectAnneeVacances(this.value)" style="padding: 8px 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
+                            ${annees.map(a => `
+                                <option value="${a}" ${selectedAnnee === a ? 'selected' : ''}>${a}</option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>Zones :</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" 
+                                       ${selectedZones.length === 3 ? 'checked' : ''}
+                                       onchange="toggleAllZones(this)">
+                                Toutes les zones
+                            </label>
+                            ${['Zone A', 'Zone B', 'Zone C'].map(zone => `
+                                <label class="checkbox-label">
+                                    <input type="checkbox" 
+                                           ${selectedZones.includes(zone) ? 'checked' : ''}
+                                           onchange="toggleZone('${zone}')">
+                                    ${zone}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Contenu des vacances
+        function renderVacancesContent() {
+            // Filtrer par année et zones sélectionnées
+            const filteredVacances = vacancesData.filter(v => {
+                if (selectedAnnee && v.annee_scolaire !== selectedAnnee) return false;
+                if (v.zones && v.zones.length > 0) {
+                    return v.zones.some(zone => selectedZones.includes(zone));
+                }
+                return true;
+            });
+
+            // Grouper par période
+            const groupedVacances = {};
+            filteredVacances.forEach(v => {
+                const nom = v.nom;
+                if (!groupedVacances[nom]) {
+                    groupedVacances[nom] = [];
+                }
+                groupedVacances[nom].push(v);
+            });
+
+            return `
+                <div class="vacances-list">
+                    ${Object.entries(groupedVacances).map(([nom, vacances]) => {
+                        return renderVacancesPeriod(nom, vacances);
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Rendu d'une période de vacances
+        function renderVacancesPeriod(nom, vacances) {
+            // Déterminer les dates globales
+            const dates = vacances.map(v => ({ debut: new Date(v.debut), fin: new Date(v.fin) }));
+            const dateDebut = new Date(Math.min(...dates.map(d => d.debut)));
+            const dateFin = new Date(Math.max(...dates.map(d => d.fin)));
+            
+            // Calculer les jours restants
+            const today = new Date();
+            const daysUntil = Math.ceil((dateDebut - today) / (1000 * 60 * 60 * 24));
+            
+            let statusLabel = '';
+            let statusColor = '#64748b';
+            
+            if (daysUntil > 0) {
+                statusLabel = `Dans ${daysUntil} jour${daysUntil > 1 ? 's' : ''}`;
+                statusColor = '#3b82f6';
+            } else if (daysUntil === 0) {
+                statusLabel = "Aujourd'hui";
+                statusColor = '#f59e0b';
+            } else if (today >= dateDebut && today <= dateFin) {
+                statusLabel = "En cours";
+                statusColor = '#10b981';
+            } else {
+                statusLabel = "Terminées";
+                statusColor = '#6b7280';
+            }
+
+            return `
+                <div class="vacances-period-card" style="
+                    background: white;
+                    border-radius: 15px;
+                    padding: 25px;
+                    margin-bottom: 20px;
+                    border-left: 5px solid ${statusColor};
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    transition: transform 0.2s;
+                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="margin: 0; color: #1e293b; font-size: 1.3em;">
+                                ${nom}
+                            </h3>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="background: #f1f5f9; color: ${statusColor}; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600;">
+                                ${statusLabel}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
+                        ${vacances.map(v => `
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                    <span style="color: #64748b;">📍</span>
+                                    <span style="color: #1e293b; font-weight: 600;">${v.zones ? v.zones.join(', ') : 'Toutes zones'}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span style="color: #64748b;">📅</span>
+                                    <span style="color: #1e293b;">Du ${formatDateFrench(v.debut, 'short')}</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="color: #64748b;">📅</span>
+                                    <span style="color: #1e293b;">Au ${formatDateFrench(v.fin, 'short')}</span>
+                                </div>
+                                ${v.population ? `
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                                        <span style="color: #64748b;">👥</span>
+                                        <span style="color: #64748b; font-size: 0.9em;">${v.population}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fonctions de filtrage des vacances
+        function selectAnneeVacances(annee) {
+            selectedAnnee = annee;
+            render();
+        }
+
+        function toggleZone(zone) {
+            const index = selectedZones.indexOf(zone);
+            if (index > -1) {
+                selectedZones.splice(index, 1);
+            } else {
+                selectedZones.push(zone);
+            }
+            render();
+        }
+
+        function toggleAllZones(checkbox) {
+            if (checkbox.checked) {
+                selectedZones = ['Zone A', 'Zone B', 'Zone C'];
+            } else {
+                selectedZones = [];
+            }
+            render();
         }
 
         // ========== GESTION AUTRES ÉQUIPES ==========
