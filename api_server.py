@@ -13,7 +13,9 @@ import json
 import os
 import io
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, date, timedelta
+import requests
+import time
 
 print('test')
 # Import du cache FFBB pour le calendrier
@@ -24,6 +26,12 @@ try:
 except ImportError:
     FFBB_AVAILABLE = False
     print("⚠️ ffbb_cache ou apscheduler non disponible - calendrier FFBB désactivé")
+
+# Cache pour les vacances scolaires
+vacances_cache = {
+    'data': None,
+    'last_update': 0
+}
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -107,6 +115,80 @@ if FFBB_AVAILABLE:
     scheduler.add_job(update_ffbb_cache_job, 'cron', hour=6, minute=0)
     scheduler.start()
     print("[FFBB] ✅ Scheduler démarré - MAJ automatique à 6h00 chaque jour")
+
+def get_vacances_scolaires():
+    """Récupère les vacances scolaires depuis l'API gouvernementale"""
+    global vacances_cache
+    
+    # Vérifier le cache
+    now = time.time()
+    if (vacances_cache['data'] is not None and 
+        now - vacances_cache['last_update'] < Config.VACANCES_CACHE_DURATION):
+        return vacances_cache['data']
+    
+    try:
+        # API officielle des vacances scolaires
+        current_year = date.today().year
+        url = f"https://data.education.gouv.fr/api/records/1.0/search/?dataset=fr-en-calendrier-scolaire&q=&facet=description&facet=population&facet=start_date&facet=end_date&facet=zones&facet=annee_scolaire&rows=1000&refine.zones=Zone+{Config.VACANCES_ZONE}&refine.annee_scolaire={current_year}-{current_year+1}"
+        
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        vacances = []
+        
+        for record in data.get('records', []):
+            fields = record.get('fields', {})
+            
+            # Filtrer les vacances (exclure les jours de rentrée)
+            description = fields.get('description', '').lower()
+            if 'vacances' in description:
+                vacances.append({
+                    'description': fields.get('description', ''),
+                    'start_date': fields.get('start_date', ''),
+                    'end_date': fields.get('end_date', ''),
+                    'zones': fields.get('zones', ''),
+                    'population': fields.get('population', '')
+                })
+        
+        # Mettre à jour le cache
+        vacances_cache['data'] = vacances
+        vacances_cache['last_update'] = now
+        
+        print(f"✅ Vacances scolaires mises à jour: {len(vacances)} périodes")
+        return vacances
+        
+    except Exception as e:
+        print(f"⚠️ Erreur lors de la récupération des vacances: {e}")
+        # Retourner le cache même périmé si disponible
+        return vacances_cache['data'] or []
+
+def is_vacances_scolaires(check_date):
+    """Vérifie si une date donnée est en vacances scolaires"""
+    vacances = get_vacances_scolaires()
+    
+    if isinstance(check_date, str):
+        try:
+            check_date = datetime.strptime(check_date, '%Y-%m-%d').date()
+        except:
+            return False
+    elif isinstance(check_date, datetime):
+        check_date = check_date.date()
+    
+    for periode in vacances:
+        try:
+            start = datetime.strptime(periode['start_date'], '%Y-%m-%d').date()
+            end = datetime.strptime(periode['end_date'], '%Y-%m-%d').date()
+            
+            if start <= check_date <= end:
+                return {
+                    'is_vacances': True,
+                    'description': periode['description']
+                }
+        except:
+            continue
+    
+    return {'is_vacances': False, 'description': None}
 
 @app.route('/')
 def index():
@@ -800,6 +882,67 @@ def get_calendar_info():
         return jsonify({
             'success': True,
             'data': info
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+# ============================================
+# ROUTES VACANCES SCOLAIRES
+# ============================================
+
+@app.route('/api/vacances', methods=['GET'])
+def get_vacances():
+    """Récupère toutes les vacances scolaires"""
+    try:
+        vacances = get_vacances_scolaires()
+        return jsonify({
+            'success': True,
+            'data': vacances,
+            'zone': Config.VACANCES_ZONE
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/vacances/check', methods=['GET'])
+def check_vacances_date():
+    """Vérifie si une date est en vacances"""
+    date_str = request.args.get('date')
+    if not date_str:
+        return jsonify({
+            'success': False,
+            'error': 'Paramètre date requis (format: YYYY-MM-DD)'
+        }), 400
+    
+    try:
+        result = is_vacances_scolaires(date_str)
+        return jsonify({
+            'success': True,
+            'data': result
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/vacances/update', methods=['POST'])
+def update_vacances_cache():
+    """Force la mise à jour du cache des vacances"""
+    try:
+        global vacances_cache
+        vacances_cache['last_update'] = 0  # Force le refresh
+        vacances = get_vacances_scolaires()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Cache mis à jour: {len(vacances)} périodes',
+            'data': vacances
         })
     except Exception as e:
         return jsonify({
