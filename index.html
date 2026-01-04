@@ -1578,7 +1578,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf', 'autres', 'upcoming', 'vacances'
+        let currentView = 'matches'; // 'matches', 'csmf', 'autres', 'upcoming'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1594,11 +1594,6 @@
         let teamMatches = [];
         let selectedOpponents = [];
         let teamStatsCache = null;
-
-        // Vacances scolaires
-        let vacancesData = [];
-        let selectedZones = ['Zone A', 'Zone B', 'Zone C'];
-        let selectedAnnee = null;
 
         // Fonction pour obtenir un nom d'équipe court mais lisible
         function getShortTeamName(fullName) {
@@ -1691,14 +1686,6 @@
                 <button class="nav-btn ${currentView === 'upcoming' ? 'active' : ''}" onclick="setView('upcoming'); closeSidebar();">
                     <span class="nav-btn-icon">📅</span>
                     <span>Matchs à venir</span>
-                </button>
-                <button class="nav-btn ${currentView === 'vacances' ? 'active' : ''}" onclick="setView('vacances'); closeSidebar();">
-                    <span class="nav-btn-icon">🏖️</span>
-                    <span>Vacances Scolaires</span>
-                </button>
-                <button class="nav-btn ${currentView === 'regles' ? 'active' : ''}" onclick="setView('regles'); closeSidebar();">
-                    <span class="nav-btn-icon">📖</span>
-                    <span>Règles du Basket</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -2247,11 +2234,6 @@
             } else if (view === 'upcoming') {
                 // Charger les matchs à venir
                 await loadUpcomingMatches();
-            } else if (view === 'vacances') {
-                // Charger les vacances scolaires
-                await loadVacancesScolaires();
-            } else if (view === 'regles') {
-                // Pas de chargement spécial pour les règles
             }
             render();
         }
@@ -2288,10 +2270,6 @@
                 contentView = renderAutresView();
             } else if (currentView === 'upcoming') {
                 contentView = renderUpcomingView();
-            } else if (currentView === 'vacances') {
-                contentView = renderVacancesView();
-            } else if (currentView === 'regles') {
-                contentView = renderReglesView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -3627,31 +3605,7 @@
             }
         }
 
-        // ========== VACANCES SCOLAIRES ==========
 
-        // Charger les vacances scolaires depuis l'API
-        async function loadVacancesScolaires() {
-            try {
-                const response = await fetch(`${API_URL}/vacances`);
-                const result = await response.json();
-                
-                if (result.success) {
-                    vacancesData = result.data || [];
-                    
-                    // Extraire les années scolaires disponibles
-                    const annees = [...new Set(vacancesData.map(v => v.annee_scolaire).filter(a => a))];
-                    if (annees.length > 0 && !selectedAnnee) {
-                        selectedAnnee = annees.sort().reverse()[0]; // Année la plus récente
-                    }
-                } else {
-                    vacancesData = [];
-                    console.error('Erreur lors du chargement des vacances:', result.error);
-                }
-            } catch (error) {
-                vacancesData = [];
-                console.error('Erreur lors du chargement des vacances:', error);
-            }
-        }
 
         // Vue des matchs à venir
         function renderUpcomingView() {
@@ -3753,315 +3707,15 @@
             `;
         }
 
-        // Vue des vacances scolaires
-        function renderVacancesView() {
-            return `
-                <div class="card">
-                    <h2>🏖️ Vacances Scolaires</h2>
-                    <p style="color: #666; margin-bottom: 20px;">Calendrier officiel des vacances scolaires par zone</p>
 
-                    ${renderVacancesFilters()}
 
-                    ${vacancesData.length > 0 ? renderVacancesContent() : `
-                        <div style="text-align: center; padding: 60px 30px; color: #666;">
-                            <div style="font-size: 4em; margin-bottom: 20px;">🏖️</div>
-                            <h3 style="margin-bottom: 15px;">Chargement des vacances...</h3>
-                            <p>Récupération des données depuis l'API officielle</p>
-                        </div>
-                    `}
-                </div>
-            `;
-        }
 
-        // Filtres pour les vacances
-        function renderVacancesFilters() {
-            const annees = [...new Set(vacancesData.map(v => v.annee_scolaire).filter(a => a))].sort().reverse();
-            
-            return `
-                <div class="filters" style="margin-bottom: 30px;">
-                    <div class="filter-group">
-                        <label>Année scolaire :</label>
-                        <select onchange="selectAnneeVacances(this.value)" style="padding: 8px 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px;">
-                            ${annees.map(a => `
-                                <option value="${a}" ${selectedAnnee === a ? 'selected' : ''}>${a}</option>
-                            `).join('')}
-                        </select>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <label>Zones :</label>
-                        <div class="checkbox-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" 
-                                       ${selectedZones.length === 3 ? 'checked' : ''}
-                                       onchange="toggleAllZones(this)">
-                                Toutes les zones
-                            </label>
-                            ${['Zone A', 'Zone B', 'Zone C'].map(zone => `
-                                <label class="checkbox-label">
-                                    <input type="checkbox" 
-                                           ${selectedZones.includes(zone) ? 'checked' : ''}
-                                           onchange="toggleZone('${zone}')">
-                                    ${zone}
-                                </label>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
 
-        // Contenu des vacances
-        function renderVacancesContent() {
-            // Filtrer par année et zones sélectionnées
-            const filteredVacances = vacancesData.filter(v => {
-                if (selectedAnnee && v.annee_scolaire !== selectedAnnee) return false;
-                if (v.zones && v.zones.length > 0) {
-                    return v.zones.some(zone => selectedZones.includes(zone));
-                }
-                return true;
-            });
 
-            // Grouper par période
-            const groupedVacances = {};
-            filteredVacances.forEach(v => {
-                const nom = v.nom;
-                if (!groupedVacances[nom]) {
-                    groupedVacances[nom] = [];
-                }
-                groupedVacances[nom].push(v);
-            });
 
-            return `
-                <div class="vacances-list">
-                    ${Object.entries(groupedVacances).map(([nom, vacances]) => {
-                        return renderVacancesPeriod(nom, vacances);
-                    }).join('')}
-                </div>
-            `;
-        }
 
-        // Rendu d'une période de vacances
-        function renderVacancesPeriod(nom, vacances) {
-            // Déterminer les dates globales
-            const dates = vacances.map(v => ({ debut: new Date(v.debut), fin: new Date(v.fin) }));
-            const dateDebut = new Date(Math.min(...dates.map(d => d.debut)));
-            const dateFin = new Date(Math.max(...dates.map(d => d.fin)));
-            
-            // Calculer les jours restants
-            const today = new Date();
-            const daysUntil = Math.ceil((dateDebut - today) / (1000 * 60 * 60 * 24));
-            
-            let statusLabel = '';
-            let statusColor = '#64748b';
-            
-            if (daysUntil > 0) {
-                statusLabel = `Dans ${daysUntil} jour${daysUntil > 1 ? 's' : ''}`;
-                statusColor = '#3b82f6';
-            } else if (daysUntil === 0) {
-                statusLabel = "Aujourd'hui";
-                statusColor = '#f59e0b';
-            } else if (today >= dateDebut && today <= dateFin) {
-                statusLabel = "En cours";
-                statusColor = '#10b981';
-            } else {
-                statusLabel = "Terminées";
-                statusColor = '#6b7280';
-            }
 
-            return `
-                <div class="vacances-period-card" style="
-                    background: white;
-                    border-radius: 15px;
-                    padding: 25px;
-                    margin-bottom: 20px;
-                    border-left: 5px solid ${statusColor};
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                    transition: transform 0.2s;
-                " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
-                        <div>
-                            <h3 style="margin: 0; color: #1e293b; font-size: 1.3em;">
-                                ${nom}
-                            </h3>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="background: #f1f5f9; color: ${statusColor}; padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600;">
-                                ${statusLabel}
-                            </div>
-                        </div>
-                    </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px;">
-                        ${vacances.map(v => `
-                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px;">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                    <span style="color: #64748b;">📍</span>
-                                    <span style="color: #1e293b; font-weight: 600;">${v.zones ? v.zones.join(', ') : 'Toutes zones'}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                    <span style="color: #64748b;">📅</span>
-                                    <span style="color: #1e293b;">Du ${formatDateFrench(v.debut, 'short')}</span>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span style="color: #64748b;">📅</span>
-                                    <span style="color: #1e293b;">Au ${formatDateFrench(v.fin, 'short')}</span>
-                                </div>
-                                ${v.population ? `
-                                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                                        <span style="color: #64748b;">👥</span>
-                                        <span style="color: #64748b; font-size: 0.9em;">${v.population}</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Fonctions de filtrage des vacances
-        function selectAnneeVacances(annee) {
-            selectedAnnee = annee;
-            render();
-        }
-
-        function toggleZone(zone) {
-            const index = selectedZones.indexOf(zone);
-            if (index > -1) {
-                selectedZones.splice(index, 1);
-            } else {
-                selectedZones.push(zone);
-            }
-            render();
-        }
-
-        function toggleAllZones(checkbox) {
-            if (checkbox.checked) {
-                selectedZones = ['Zone A', 'Zone B', 'Zone C'];
-            } else {
-                selectedZones = [];
-            }
-            render();
-        }
-
-        // Vue des règles du basket
-        function renderReglesView() {
-            return `
-                <div class="card">
-                    <h2>📖 Règles du Basketball</h2>
-                    <p style="color: #666; margin-bottom: 30px;">Guide complet des règles officielles du basketball</p>
-
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        <div class="advanced-stat-card" style="text-align: left; padding: 25px;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">🏟️ Le Terrain</h3>
-                            <ul style="list-style: none; padding: 0; color: #334155; line-height: 1.6;">
-                                <li style="margin-bottom: 8px;">• <strong>Dimensions :</strong> 28m x 15m</li>
-                                <li style="margin-bottom: 8px;">• <strong>Panier :</strong> 3,05m de hauteur</li>
-                                <li style="margin-bottom: 8px;">• <strong>Ligne 3 points :</strong> 6,75m du panier</li>
-                                <li style="margin-bottom: 8px;">• <strong>Ligne LF :</strong> 4,60m du panier</li>
-                                <li style="margin-bottom: 8px;">• <strong>Raquette :</strong> 4,90m x 5,80m</li>
-                            </ul>
-                        </div>
-
-                        <div class="advanced-stat-card" style="text-align: left; padding: 25px;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">👥 Les Équipes</h3>
-                            <ul style="list-style: none; padding: 0; color: #334155; line-height: 1.6;">
-                                <li style="margin-bottom: 8px;">• <strong>Joueuses sur terrain :</strong> 5 par équipe</li>
-                                <li style="margin-bottom: 8px;">• <strong>Remplaçantes :</strong> 7 maximum</li>
-                                <li style="margin-bottom: 8px;">• <strong>Changements :</strong> illimités</li>
-                                <li style="margin-bottom: 8px;">• <strong>Temps-morts :</strong> 5 par équipe</li>
-                                <li style="margin-bottom: 8px;">• <strong>Capitaine :</strong> 1 par équipe</li>
-                            </ul>
-                        </div>
-
-                        <div class="advanced-stat-card" style="text-align: left; padding: 25px;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">⏱️ Temps de Jeu</h3>
-                            <ul style="list-style: none; padding: 0; color: #334155; line-height: 1.6;">
-                                <li style="margin-bottom: 8px;">• <strong>4 quart-temps :</strong> 10 minutes chacun</li>
-                                <li style="margin-bottom: 8px;">• <strong>Mi-temps :</strong> 15 minutes</li>
-                                <li style="margin-bottom: 8px;">• <strong>Prolongations :</strong> 5 minutes</li>
-                                <li style="margin-bottom: 8px;">• <strong>Chrono arrêté :</strong> sur faute, sortie...</li>
-                                <li style="margin-bottom: 8px;">• <strong>Règle 24 sec :</strong> temps max d'attaque</li>
-                            </ul>
-                        </div>
-
-                        <div class="advanced-stat-card" style="text-align: left; padding: 25px;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">🎯 Le Scoring</h3>
-                            <ul style="list-style: none; padding: 0; color: #334155; line-height: 1.6;">
-                                <li style="margin-bottom: 8px;">• <strong>Panier 2 points :</strong> tir dans la raquette</li>
-                                <li style="margin-bottom: 8px;">• <strong>Panier 3 points :</strong> tir derrière la ligne</li>
-                                <li style="margin-bottom: 8px;">• <strong>Lancer franc :</strong> 1 point</li>
-                                <li style="margin-bottom: 8px;">• <strong>Panier contre son camp :</strong> 2 points adverses</li>
-                                <li style="margin-bottom: 8px;">• <strong>Victoire :</strong> plus de points à la fin</li>
-                            </ul>
-                        </div>
-
-                        <div class="advanced-stat-card" style="text-align: left; padding: 25px;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">⚠️ Les Fautes</h3>
-                            <ul style="list-style: none; padding: 0; color: #334155; line-height: 1.6;">
-                                <li style="margin-bottom: 8px;">• <strong>Faute personnelle :</strong> contact illégal</li>
-                                <li style="margin-bottom: 8px;">• <strong>5 fautes :</strong> élimination du match</li>
-                                <li style="margin-bottom: 8px;">• <strong>Faute technique :</strong> antisportive</li>
-                                <li style="margin-bottom: 8px;">• <strong>Faute flagrante :</strong> contact excessif</li>
-                                <li style="margin-bottom: 8px;">• <strong>Bonus :</strong> LF dès la 5e faute d'équipe</li>
-                            </ul>
-                        </div>
-
-                        <div class="advanced-stat-card" style="text-align: left; padding: 25px;">
-                            <h3 style="color: #1e3a8a; margin-bottom: 15px;">🚫 Les Violations</h3>
-                            <ul style="list-style: none; padding: 0; color: #334155; line-height: 1.6;">
-                                <li style="margin-bottom: 8px;">• <strong>Marcher :</strong> plus de 2 pas sans dribbler</li>
-                                <li style="margin-bottom: 8px;">• <strong>Double dribble :</strong> reprendre le dribble</li>
-                                <li style="margin-bottom: 8px;">• <strong>Sortie :</strong> ballon ou joueuse hors limites</li>
-                                <li style="margin-bottom: 8px;">• <strong>Retour en zone :</strong> repasser en défense</li>
-                                <li style="margin-bottom: 8px;">• <strong>3 secondes :</strong> trop longtemps en raquette</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div style="background: #f8fafc; padding: 25px; border-radius: 15px; border-left: 5px solid #1e3a8a; margin-top: 30px;">
-                        <h3 style="color: #1e3a8a; margin-bottom: 15px;">🏆 Arbitrage et Officiels</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                            <div>
-                                <h4 style="color: #334155; margin-bottom: 10px;">👨‍⚖️ Les Arbitres</h4>
-                                <ul style="color: #475569; line-height: 1.6;">
-                                    <li>2 ou 3 arbitres par match</li>
-                                    <li>Décisions définitives</li>
-                                    <li>Signalisation gestuelle</li>
-                                    <li>Contrôle du temps de jeu</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 style="color: #334155; margin-bottom: 10px;">📊 Table de Marque</h4>
-                                <ul style="color: #475569; line-height: 1.6;">
-                                    <li>Chronométreur officiel</li>
-                                    <li>Marqueur (score, fautes)</li>
-                                    <li>Secrétaire (feuille de match)</li>
-                                    <li>Opérateur 24 secondes</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 25px; border-radius: 15px; margin-top: 30px; text-align: center;">
-                        <h3 style="color: white; margin-bottom: 15px;">🎖️ Fair-Play et Esprit Sportif</h3>
-                        <p style="font-size: 16px; line-height: 1.6; margin: 0;">
-                            Le basketball est un sport de contact contrôlé qui privilégie l'habileté, la stratégie et l'esprit d'équipe. 
-                            Le respect des adversaires, des arbitres et des règles est fondamental pour préserver 
-                            l'intégrité et la beauté de ce sport.
-                        </p>
-                    </div>
-
-                    <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f1f5f9; border-radius: 10px;">
-                        <p style="color: #64748b; font-size: 14px; margin: 0;">
-                            📚 Règles officielles FIBA • Version simplifiée à des fins éducatives
-                        </p>
-                    </div>
-                </div>
-            `;
-        }
 
         // ========== GESTION AUTRES ÉQUIPES ==========
 

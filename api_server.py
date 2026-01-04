@@ -779,69 +779,7 @@ def get_calendar_info():
             'error': str(e)
         }), 500
 
-# ============================================
-# ROUTES VACANCES SCOLAIRES
-# ============================================
 
-@app.route('/api/vacances', methods=['GET'])
-def get_vacances_scolaires():
-    """Récupère les vacances scolaires depuis l'API officielle"""
-    import requests
-    from datetime import datetime, timedelta
-    
-    try:
-        # API officielle du gouvernement français
-        url = "https://data.education.gouv.fr/api/records/1.0/search/"
-        params = {
-            'dataset': 'fr-en-calendrier-scolaire',
-            'rows': 100,
-            'sort': 'start_date',
-            'facet': 'zones',
-            'facet': 'description'
-        }
-        
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()
-        
-        data = response.json()
-        records = data.get('records', [])
-        
-        # Traiter les données
-        vacances = []
-        for record in records:
-            fields = record.get('fields', {})
-            
-            # Filtrer les vacances (exclure les jours fériés isolés)
-            description = fields.get('description', '').lower()
-            if any(keyword in description for keyword in ['vacances', 'congés', 'pont']):
-                vacances.append({
-                    'nom': fields.get('description', ''),
-                    'debut': fields.get('start_date', ''),
-                    'fin': fields.get('end_date', ''),
-                    'zones': fields.get('zones', []),
-                    'annee_scolaire': fields.get('annee_scolaire', ''),
-                    'population': fields.get('population', '')
-                })
-        
-        # Trier par date de début
-        vacances.sort(key=lambda x: x['debut'])
-        
-        return jsonify({
-            'success': True,
-            'data': vacances,
-            'total': len(vacances)
-        })
-        
-    except requests.RequestException as e:
-        return jsonify({
-            'success': False,
-            'error': f'Erreur lors de la récupération des données: {str(e)}'
-        }), 500
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
 
 if __name__ == '__main__':
     print("\n" + "="*60)
