@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            background: #1a1a2e;
             min-height: 100vh;
         }
 
@@ -26,8 +26,8 @@
         /* Sidebar */
         .sidebar {
             width: 280px;
-            background: linear-gradient(180deg, #1a365d 0%, #2d3748 100%);
-            border-right: 1px solid rgba(0,0,0,0.1);
+            background: #003366;
+            border-right: 1px solid rgba(255,215,0,0.2);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -79,9 +79,9 @@
         }
 
         .nav-btn.active {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
-            border-left: 3px solid #3b82f6;
+            background: rgba(255, 215, 0, 0.2);
+            color: #FFD700;
+            border-left: 3px solid #FFD700;
             font-weight: 600;
         }
 
@@ -102,10 +102,10 @@
             gap: 8px;
             width: 100%;
             padding: 12px 15px;
-            background: #3b82f6;
+            background: #FFD700;
             border: none;
             border-radius: 8px;
-            color: white;
+            color: #003366;
             font-size: 0.9em;
             font-weight: 600;
             cursor: pointer;
@@ -114,8 +114,8 @@
 
         .upload-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-            background: #2563eb;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+            background: #FFC107;
         }
 
         /* Modal d'upload */
@@ -372,8 +372,8 @@
         }
 
         .match-list-item.active {
-            background: rgba(59, 130, 246, 0.2);
-            border-left-color: #3b82f6;
+            background: rgba(255, 215, 0, 0.2);
+            border-left-color: #FFD700;
         }
 
         .match-list-item.active .match-teams {
@@ -381,8 +381,8 @@
         }
 
         .match-journee {
-            background: #1e293b;
-            color: #3b82f6;
+            background: #003366;
+            color: #FFD700;
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 0.7em;
@@ -482,17 +482,17 @@
             background: rgba(255, 255, 255, 0.95);
             padding: 25px;
             border-radius: 15px;
-            border: 1px solid #3b82f6;
-            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+            border: 1px solid #FFD700;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.1);
             margin-bottom: 25px;
             backdrop-filter: blur(10px);
         }
 
         .card h2 {
-            color: #1e293b;
+            color: #003366;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 3px solid #3b82f6;
+            border-bottom: 3px solid #FFD700;
         }
 
         /* Header du match actuel */
@@ -500,8 +500,8 @@
             background: #ffffff;
             padding: 25px 30px;
             border-radius: 15px;
-            border: 1px solid #fbbf24;
-            box-shadow: 0 1px 3px rgba(251, 191, 36, 0.1);
+            border: 1px solid #FFD700;
+            box-shadow: 0 1px 3px rgba(255, 215, 0, 0.1);
             margin-bottom: 25px;
             display: flex;
             align-items: center;
@@ -509,8 +509,8 @@
         }
 
         .match-badge {
-            background: #1e3a8a;
-            color: #fbbf24;
+            background: #003366;
+            color: #FFD700;
             padding: 12px 20px;
             border-radius: 12px;
             font-weight: bold;
@@ -520,7 +520,7 @@
         }
 
         .match-title-info h2 {
-            color: #1e3a8a;
+            color: #003366;
             font-size: 1.5em;
             margin: 0 0 5px 0;
             padding: 0;
@@ -572,7 +572,7 @@
         .team-score {
             font-size: 3em;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #003366;
         }
 
         .vs {
@@ -588,8 +588,8 @@
         }
 
         th {
-            background: #1e3a8a;
-            color: #fbbf24;
+            background: #003366;
+            color: #FFD700;
             padding: 10px 8px;
             text-align: center;
             font-weight: 600;
@@ -617,8 +617,8 @@
             padding: 4px 10px;
             border-radius: 20px;
             font-weight: bold;
-            background: #1e3a8a;
-            color: #fbbf24;
+            background: #003366;
+            color: #FFD700;
             font-size: 13px;
         }
 
@@ -637,7 +637,7 @@
         }
 
         .quarter-box h3 {
-            color: #1e3a8a;
+            color: #003366;
             margin-bottom: 10px;
         }
 
@@ -682,12 +682,12 @@
         }
 
         .tab:hover {
-            color: #1e3a8a;
+            color: #003366;
         }
 
         .tab.active {
-            color: #1e3a8a;
-            border-bottom-color: #fbbf24;
+            color: #003366;
+            border-bottom-color: #FFD700;
         }
 
         .tab-content {
@@ -706,7 +706,7 @@
         }
 
         .stat-card {
-            background: #1e3a8a;
+            background: #003366;
             color: white;
             padding: 20px;
             border-radius: 10px;
@@ -754,15 +754,15 @@
         .rank-1 { background: gold; color: #333; }
         .rank-2 { background: silver; color: #333; }
         .rank-3 { background: #cd7f32; color: white; }
-        .rank-other { background: #1e3a8a; color: white; }
+        .rank-other { background: #003366; color: white; }
 
         .team-section {
             margin-bottom: 40px;
         }
 
         .team-header {
-            background: #1e3a8a;
-            color: #fbbf24;
+            background: #003366;
+            color: #FFD700;
             padding: 15px;
             border-radius: 10px 10px 0 0;
             font-size: 1.3em;
@@ -817,7 +817,7 @@
         }
 
         .summary-stats h3 {
-            color: #1e3a8a;
+            color: #003366;
             margin-bottom: 15px;
         }
 
@@ -843,7 +843,7 @@
         .summary-item .value {
             font-size: 1.8em;
             font-weight: bold;
-            color: #1e3a8a;
+            color: #003366;
         }
 
         .scroll-table {
@@ -924,12 +924,12 @@
         }
 
         .btn-primary {
-            background: #fbbf24;
-            color: #1e3a8a;
+            background: #FFD700;
+            color: #003366;
         }
         
         .btn-primary:hover {
-            background: #f59e0b;
+            background: #FFC107;
         }
 
         .btn-danger {
@@ -1090,7 +1090,7 @@
         }
 
         /* ========== COACHING IA ========== */
-        .coaching-card { background: #1e3a8a; color: white; padding: 30px; border-radius: 15px; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .coaching-card { background: #003366; color: white; padding: 30px; border-radius: 15px; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .coaching-card h2 { color: white; border-bottom: 3px solid rgba(255,255,255,0.3); padding-bottom: 15px; margin-bottom: 25px; }
         .coaching-card h3 { color: #fff; font-size: 1.3em; margin-top: 25px; margin-bottom: 15px; }
         .coaching-summary { background: rgba(255,255,255,0.15); padding: 15px 20px; border-radius: 10px; margin-bottom: 25px; font-size: 1.1em; text-align: center; }
@@ -1129,15 +1129,15 @@
         /* Stats avancées */
         .advanced-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
         .advanced-stat-card { background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; border: 2px solid transparent; transition: all 0.3s; }
-        .advanced-stat-card:hover { border-color: #1e40af; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(30, 64, 175, 0.2); }
+        .advanced-stat-card:hover { border-color: #FFD700; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 215, 0, 0.2); }
         .advanced-stat-value { font-size: 2em; font-weight: bold; color: #1e3a8a; }
         .advanced-stat-label { font-size: 0.9em; color: #334155; margin-top: 5px; }
         .advanced-stat-detail { font-size: 0.8em; color: #475569; margin-top: 3px; }
 
         /* Toggle sections */
-        .section-toggle { background: #1e3a8a; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 10px 5px; transition: all 0.3s; }
-        .section-toggle:hover { background: #1e3a8a; transform: translateY(-2px); }
-        .section-toggle.active { background: #1d4ed8; }
+        .section-toggle { background: #003366; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-size: 1em; margin: 10px 5px; transition: all 0.3s; }
+        .section-toggle:hover { background: #004080; transform: translateY(-2px); }
+        .section-toggle.active { background: #FFD700; color: #003366; }
         .collapsible-section { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; }
         .collapsible-section.expanded { max-height: 5000px; }
 
@@ -1145,7 +1145,7 @@
         .lineup-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
         .lineup-filter-btn { background: #e2e8f0; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.3s; color: #334155; }
         .lineup-filter-btn:hover { background: #cbd5e1; }
-        .lineup-filter-btn.active { background: #fbbf24; color: #1e3a8a; }
+        .lineup-filter-btn.active { background: #FFD700; color: #003366; }
 
         /* En-têtes de tableau triables */
         th.sortable {
@@ -1156,7 +1156,7 @@
             transition: background 0.2s;
         }
         th.sortable:hover {
-            background: rgba(251, 191, 36, 0.3);
+            background: rgba(255, 215, 0, 0.3);
         }
         th.sortable::after {
             content: '⇅';
@@ -1170,15 +1170,15 @@
         th.sortable.sort-asc::after {
             content: '▲';
             opacity: 1;
-            color: #fbbf24;
+            color: #FFD700;
         }
         th.sortable.sort-desc::after {
             content: '▼';
             opacity: 1;
-            color: #fbbf24;
+            color: #FFD700;
         }
         th.sortable.sort-asc, th.sortable.sort-desc {
-            background: rgba(251, 191, 36, 0.2);
+            background: rgba(255, 215, 0, 0.2);
         }
 
         /* ═══════════════════════════════════════════════════════════════ */
@@ -1193,12 +1193,12 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: #1e293b;
+            background: #003366;
             z-index: 150;
             padding: 0 15px;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,215,0,0.2);
         }
 
         .hamburger-btn {
