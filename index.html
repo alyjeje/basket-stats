@@ -1578,7 +1578,7 @@
         // État de l'application
         let allMatches = [];
         let currentMatch = null;
-        let currentView = 'matches'; // 'matches', 'csmf', 'autres', 'upcoming'
+        let currentView = 'matches'; // 'matches', 'csmf', 'autres', 'upcoming', 'regles'
         let currentTab = 'overview';
         let selectedMatchesForCsmf = [];
         let csmfDataCache = null;
@@ -1686,6 +1686,10 @@
                 <button class="nav-btn ${currentView === 'upcoming' ? 'active' : ''}" onclick="setView('upcoming'); closeSidebar();">
                     <span class="nav-btn-icon">📅</span>
                     <span>Matchs à venir</span>
+                </button>
+                <button class="nav-btn ${currentView === 'regles' ? 'active' : ''}" onclick="setView('regles'); closeSidebar();">
+                    <span class="nav-btn-icon">📖</span>
+                    <span>Règles du Basket</span>
                 </button>
             `;
             navEl.innerHTML = navHtml;
@@ -2270,6 +2274,8 @@
                 contentView = renderAutresView();
             } else if (currentView === 'upcoming') {
                 contentView = renderUpcomingView();
+            } else if (currentView === 'regles') {
+                contentView = renderReglesView();
             }
 
             // Plus besoin des onglets principaux, on a la sidebar
@@ -3625,6 +3631,197 @@
                             <p>Le calendrier des prochains matchs n'est pas encore disponible.</p>
                         </div>
                     `}
+                </div>
+            `;
+        }
+
+        // Vue des règles du basket
+        function renderReglesView() {
+            return `
+                <div class="card">
+                    <h2>📖 Règles du Basketball</h2>
+                    <p style="color: #666; margin-bottom: 30px;">Guide complet des règles essentielles du basketball</p>
+
+                    <!-- Règles de base -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">🏀 Règles de Base</h3>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <h4 style="color: #1e293b; margin-bottom: 10px;">Objectif du jeu</h4>
+                            <p style="color: #475569; line-height: 1.6;">Le basketball oppose deux équipes de 5 joueurs. L'objectif est de marquer plus de points que l'adversaire en faisant passer le ballon dans le panier adverse, tout en empêchant l'équipe adverse de marquer dans son propre panier.</p>
+                        </div>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 10px;">
+                            <h4 style="color: #1e293b; margin-bottom: 10px;">Composition des équipes</h4>
+                            <ul style="color: #475569; line-height: 1.6; margin-left: 20px;">
+                                <li>5 joueurs sur le terrain par équipe</li>
+                                <li>Jusqu'à 7 remplaçants sur le banc</li>
+                                <li>Changements illimités pendant les arrêts de jeu</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Durée du match -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">⏱️ Durée du Match</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div style="background: #e0f2fe; padding: 15px; border-radius: 10px; border-left: 4px solid #0ea5e9;">
+                                <h4 style="color: #0369a1; margin-bottom: 8px;">FIBA / Europe</h4>
+                                <p style="color: #0c4a6e; margin: 0;">4 quart-temps de 10 minutes<br><strong>Total : 40 minutes</strong></p>
+                            </div>
+                            <div style="background: #fef3c7; padding: 15px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                                <h4 style="color: #d97706; margin-bottom: 8px;">NBA</h4>
+                                <p style="color: #92400e; margin: 0;">4 quart-temps de 12 minutes<br><strong>Total : 48 minutes</strong></p>
+                            </div>
+                        </div>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                            <h4 style="color: #1e293b; margin-bottom: 10px;">Temps morts et prolongations</h4>
+                            <ul style="color: #475569; line-height: 1.6; margin-left: 20px;">
+                                <li>Pause de 15 minutes à la mi-temps</li>
+                                <li>Pauses de 2 minutes entre les quart-temps</li>
+                                <li>En cas d'égalité : prolongation de 5 minutes</li>
+                                <li>Temps morts : 2 par équipe en première mi-temps, 3 en seconde</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Système de points -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">🎯 Système de Points</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="background: #dcfce7; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #22c55e;">
+                                <div style="font-size: 2.5em; font-weight: bold; color: #15803d;">1</div>
+                                <div style="color: #166534; font-weight: 600;">Lancer Franc</div>
+                                <small style="color: #15803d;">Tir depuis la ligne des lancers francs</small>
+                            </div>
+                            <div style="background: #dbeafe; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #3b82f6;">
+                                <div style="font-size: 2.5em; font-weight: bold; color: #1d4ed8;">2</div>
+                                <div style="color: #1e40af; font-weight: 600;">Panier 2 points</div>
+                                <small style="color: #1d4ed8;">Tir à l'intérieur de l'arc des 3 points</small>
+                            </div>
+                            <div style="background: #fef3c7; padding: 20px; border-radius: 10px; text-align: center; border: 2px solid #f59e0b;">
+                                <div style="font-size: 2.5em; font-weight: bold; color: #d97706;">3</div>
+                                <div style="color: #d97706; font-weight: 600;">Panier 3 points</div>
+                                <small style="color: #92400e;">Tir depuis l'extérieur de l'arc des 3 points</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fautes -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">⚠️ Fautes et Violations</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <h4 style="color: #dc2626; margin-bottom: 10px;">Fautes Personnelles</h4>
+                                <div style="background: #fef2f2; padding: 15px; border-radius: 10px; border-left: 4px solid #dc2626;">
+                                    <ul style="color: #7f1d1d; line-height: 1.6; margin: 0; padding-left: 20px;">
+                                        <li>Contact illégal avec un adversaire</li>
+                                        <li>Maximum 5 fautes par joueur</li>
+                                        <li>6ème faute = élimination du match</li>
+                                        <li>4 fautes d'équipe par quart-temps = lancers francs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="color: #ea580c; margin-bottom: 10px;">Violations</h4>
+                                <div style="background: #fff7ed; padding: 15px; border-radius: 10px; border-left: 4px solid #ea580c;">
+                                    <ul style="color: #9a3412; line-height: 1.6; margin: 0; padding-left: 20px;">
+                                        <li>Marcher : se déplacer sans dribbler</li>
+                                        <li>Double dribble : dribbler à deux mains</li>
+                                        <li>Reprise de dribble après arrêt</li>
+                                        <li>Sortie de terrain</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Règles temporelles -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">⏰ Règles Temporelles</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #0369a1;">24"</div>
+                                <div style="color: #0c4a6e; font-weight: 600;">Possession</div>
+                                <small style="color: #075985;">Temps maximum pour tenter un tir</small>
+                            </div>
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #0369a1;">8"</div>
+                                <div style="color: #0c4a6e; font-weight: 600;">Demi-terrain</div>
+                                <small style="color: #075985;">Temps pour passer en attaque</small>
+                            </div>
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #0369a1;">5"</div>
+                                <div style="color: #0c4a6e; font-weight: 600;">Remise en jeu</div>
+                                <small style="color: #075985;">Temps pour effectuer une remise en jeu</small>
+                            </div>
+                            <div style="background: #f0f9ff; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 1.8em; font-weight: bold; color: #0369a1;">3"</div>
+                                <div style="color: #0c4a6e; font-weight: 600;">Zone</div>
+                                <small style="color: #075985;">Temps maximum dans la raquette</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Positions -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">👥 Postes et Positions</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 4px solid #8b5cf6;">
+                                <h4 style="color: #7c3aed; margin-bottom: 8px;">1 - Meneur (PG)</h4>
+                                <p style="color: #6b21a8; margin: 0; font-size: 0.9em;">Organise le jeu, distribue les passes, dirige l'attaque</p>
+                            </div>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 4px solid #06b6d4;">
+                                <h4 style="color: #0891b2; margin-bottom: 8px;">2 - Arrière (SG)</h4>
+                                <p style="color: #155e75; margin: 0; font-size: 0.9em;">Tireur principal, bon dans le jeu extérieur</p>
+                            </div>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 4px solid #10b981;">
+                                <h4 style="color: #059669; margin-bottom: 8px;">3 - Ailier (SF)</h4>
+                                <p style="color: #065f46; margin: 0; font-size: 0.9em;">Polyvalent, bon tireur et rebondeur</p>
+                            </div>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                                <h4 style="color: #d97706; margin-bottom: 8px;">4 - Ailier Fort (PF)</h4>
+                                <p style="color: #92400e; margin: 0; font-size: 0.9em;">Jeu près du panier, rebonds, tirs à mi-distance</p>
+                            </div>
+                            <div style="background: #f8fafc; padding: 15px; border-radius: 10px; border-left: 4px solid #dc2626;">
+                                <h4 style="color: #dc2626; margin-bottom: 8px;">5 - Pivot (C)</h4>
+                                <p style="color: #991b1b; margin: 0; font-size: 0.9em;">Jeu sous les paniers, rebonds, défense intérieure</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Arbitrage -->
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: #1e40af; margin-bottom: 15px; border-bottom: 2px solid #ffc107; padding-bottom: 5px;">👨‍⚖️ Arbitrage</h3>
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 10px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                                <div>
+                                    <h4 style="color: #1e293b; margin-bottom: 10px;">Équipe d'arbitrage</h4>
+                                    <ul style="color: #475569; line-height: 1.6; margin: 0; padding-left: 20px;">
+                                        <li>2 ou 3 arbitres sur le terrain</li>
+                                        <li>1 arbitre principal</li>
+                                        <li>Commissaire technique</li>
+                                        <li>Chronométreur officiel</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 style="color: #1e293b; margin-bottom: 10px;">Signalisation</h4>
+                                    <ul style="color: #475569; line-height: 1.6; margin: 0; padding-left: 20px;">
+                                        <li>Gestes codifiés pour chaque faute</li>
+                                        <li>Sifflet pour arrêter le jeu</li>
+                                        <li>Communication avec la table de marque</li>
+                                        <li>Décisions irrévocables</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Retour à l'accueil -->
+                    <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f1f5f9; border-radius: 10px;">
+                        <p style="color: #64748b; margin-bottom: 15px;">Vous connaissez maintenant les règles essentielles du basketball !</p>
+                        <button onclick="setView('matches')" style="background: #1e40af; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='#1e3a8a'" onmouseout="this.style.background='#1e40af'">
+                            🏀 Retour aux Statistiques
+                        </button>
+                    </div>
                 </div>
             `;
         }
