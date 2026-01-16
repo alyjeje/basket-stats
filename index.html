@@ -1691,6 +1691,10 @@
                     <span class="nav-btn-icon">📖</span>
                     <span>Règles du basket</span>
                 </button>
+                <button class="nav-btn ${currentView === 'rules' ? 'active' : ''}" onclick="setView('rules'); closeSidebar();">
+                    <span class="nav-btn-icon">📖</span>
+                    <span>Règles du basket</span>
+                </button>
             `;
             navEl.innerHTML = navHtml;
 
