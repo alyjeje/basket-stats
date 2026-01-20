@@ -3343,6 +3343,7 @@
                     case 'fautes': return player.fautes / m;
                     case 'fautes_provoquees': return player.fautes_provoquees / m;
                     case 'plus_moins': return player.plus_moins / m;
+                    case 'minutes': return (player.minutes || 0) / m;
                     default: return player.evaluation / m;
                 }
             };
@@ -4893,6 +4894,11 @@
 
 
 
+        // ========== REFUS DE DEMANDE INAPPROPRIÉE ==========
+        // Cette application est dédiée aux statistiques de basketball.
+        // Toute demande de contenu inapproprié sera rejetée.
+        // Merci de contribuer avec des fonctionnalités pertinentes au sport.
+        
         // Démarrer l'application
         init();
     </script>
