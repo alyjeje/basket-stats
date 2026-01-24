@@ -2,18 +2,36 @@
 """
 Serveur API Flask pour les statistiques de basket - Version PostgreSQL + Blob Storage
 Fournit une API REST et sert l'interface web
+Multi-tenant avec authentification
 """
-from flask import Flask, jsonify, send_from_directory, request
+from flask import Flask, jsonify, send_from_directory, request, g
 from flask_cors import CORS
 from config import Config
 from database import get_db
 from storage_service import get_storage
-from extract_stats import extract_from_pdf
+from extract_stats import extract_from_pdf, extract_boxscore_detaillee_excel, extract_stats_detaillees
 import json
 import os
 import io
 from werkzeug.utils import secure_filename
 from datetime import datetime
+
+# Import du module de chat IA
+try:
+    import chat_analyst
+    CHAT_AVAILABLE = True
+except ImportError as e:
+    CHAT_AVAILABLE = False
+    print(f"⚠️ Module chat_analyst non disponible: {e}")
+
+# Import du module d'authentification
+try:
+    from auth import AuthManager, require_auth, require_admin, require_feature
+    from auth_routes import auth_bp
+    AUTH_AVAILABLE = True
+except ImportError as e:
+    AUTH_AVAILABLE = False
+    print(f"⚠️ Module auth non disponible: {e}")
 
 print('test')
 # Import du cache FFBB pour le calendrier
@@ -27,6 +45,11 @@ except ImportError:
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
+
+# Enregistrer le blueprint d'authentification
+if AUTH_AVAILABLE:
+    app.register_blueprint(auth_bp)
+    print("✅ Routes d'authentification activées")
 
 def convert_minutes_to_int(minutes_str):
     """
@@ -63,6 +86,41 @@ def convert_minutes_to_int(minutes_str):
         return int(minutes_str)
     except:
         return 0
+
+def parse_french_date(date_str):
+    """Convertit une date française en format ISO (YYYY-MM-DD)"""
+    if not date_str:
+        return None
+    
+    # Mapping des mois français
+    mois = {
+        'janv.': '01', 'janvier': '01',
+        'févr.': '02', 'février': '02', 'fevr.': '02',
+        'mars': '03',
+        'avr.': '04', 'avril': '04',
+        'mai': '05',
+        'juin': '06',
+        'juil.': '07', 'juillet': '07',
+        'août': '08', 'aout': '08',
+        'sept.': '09', 'septembre': '09',
+        'oct.': '10', 'octobre': '10',
+        'nov.': '11', 'novembre': '11',
+        'déc.': '12', 'décembre': '12', 'dec.': '12'
+    }
+    
+    try:
+        parts = date_str.strip().split()
+        if len(parts) >= 3:
+            jour = parts[0].zfill(2)
+            mois_str = parts[1].lower()
+            annee = parts[2]
+            
+            if mois_str in mois:
+                return f"{annee}-{mois[mois_str]}-{jour}"
+    except:
+        pass
+    
+    return date_str
 
 # Configuration
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_UPLOAD_SIZE
@@ -110,8 +168,20 @@ if FFBB_AVAILABLE:
 
 @app.route('/')
 def index():
-    """Page d'accueil - Interface de visualisation"""
+    """Landing page commerciale"""
+    return send_from_directory('.', 'landing.html')
+
+@app.route('/app')
+def app_dashboard():
+    """Application principale (dashboard club)"""
     return send_from_directory('.', 'index.html')
+
+# Route legacy pour compatibilité
+@app.route('/dashboard')
+def dashboard_redirect():
+    """Redirection vers /app"""
+    from flask import redirect
+    return redirect('/app')
 
 @app.route('/health')
 def health():
@@ -143,6 +213,17 @@ def health():
         status['storage'] = 'not initialized'
         status['status'] = 'degraded'
     
+    # Vérifier la clé Anthropic (sans révéler la valeur)
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if api_key:
+        # Masquer la clé mais montrer qu'elle existe
+        status['anthropic_api'] = f'configured (starts with {api_key[:10]}...)'
+    else:
+        status['anthropic_api'] = 'not configured'
+        # Lister les variables d'environnement qui contiennent "KEY" ou "API" pour debug
+        env_keys = [k for k in os.environ.keys() if 'KEY' in k.upper() or 'API' in k.upper() or 'ANTHROP' in k.upper()]
+        status['env_hint'] = f'Found env vars matching KEY/API/ANTHROP: {env_keys}'
+    
     return jsonify(status), 200 if status['status'] == 'ok' else 503
 
 @app.route('/api/matches', methods=['GET'])
@@ -154,39 +235,6 @@ def get_matches():
             'success': True,
             'data': matches
         })
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/api/matches/latest', methods=['GET'])
-def get_latest_match():
-    """Récupère le dernier match joué (par date)"""
-    try:
-        matches = db.get_all_matches()
-        if not matches:
-            return jsonify({
-                'success': False,
-                'error': 'Aucun match disponible'
-            }), 404
-        
-        # Trier par date (plus récente en premier)
-        sorted_matches = sorted(matches, key=lambda x: x.get('date', ''), reverse=True)
-        latest_match_id = sorted_matches[0]['id']
-        
-        # Récupérer les détails du match le plus récent
-        match = db.get_match_by_id(latest_match_id)
-        if match:
-            return jsonify({
-                'success': True,
-                'data': match
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Match non trouvé'
-            }), 404
     except Exception as e:
         return jsonify({
             'success': False,
@@ -269,81 +317,215 @@ def get_player_stats(player_name):
 @app.route('/api/upload', methods=['POST'])
 def upload_pdf():
     """
-    Upload intelligent de PDF - Détecte automatiquement le type
-    Supporte: FIBA Box Score, Boxscore Détaillée, Analyse des 5 en jeu
+    Upload intelligent multi-fichiers - Détecte automatiquement le type de chaque fichier
+    Accepte 1 à N fichiers PDF (ou Excel pour Boxscore)
+    
+    Types détectés automatiquement:
+    - FIBA_Box_Score (obligatoire - crée le match)
+    - Analyse_des_5_en_jeu (combinaisons de 5)
+    - Boxscore_Détaillée (stats avancées équipe, périodes)
+    - Statistiques_détaillées (tirs int/ext, ratios, 5 départ vs banc)
     """
-    if 'file' not in request.files:
-        return jsonify({
-            'success': False,
-            'error': 'Aucun fichier fourni'
-        }), 400
+    import tempfile
+    from extract_stats import detect_pdf_type, extract_from_pdf, extract_stats_detaillees
     
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({
-            'success': False,
-            'error': 'Nom de fichier vide'
-        }), 400
+    # Récupérer tous les fichiers uploadés
+    files = request.files.getlist('files')
+    if not files or len(files) == 0:
+        # Fallback sur 'file' pour compatibilité
+        if 'file' in request.files:
+            files = [request.files['file']]
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Aucun fichier fourni'
+            }), 400
     
-    if not allowed_file(file.filename):
+    # Filtrer les fichiers vides
+    files = [f for f in files if f.filename and f.filename != '']
+    
+    if len(files) == 0:
         return jsonify({
             'success': False,
-            'error': 'Type de fichier non autorisé (PDF uniquement)'
+            'error': 'Aucun fichier valide fourni'
         }), 400
     
     try:
-        filename = secure_filename(file.filename)
+        temp_dir = tempfile.gettempdir()
         
-        # Lire le contenu du fichier
-        file_content = file.read()
-        file_stream = io.BytesIO(file_content)
+        # Étape 1: Sauvegarder tous les fichiers et détecter leurs types
+        file_info = []
+        for f in files:
+            filename = secure_filename(f.filename)
+            temp_path = os.path.join(temp_dir, filename)
+            f.save(temp_path)
+            
+            # Détecter le type
+            ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+            
+            if ext in ['xlsx', 'xls']:
+                # Fichiers Excel = Boxscore Détaillée
+                pdf_type = 'BOXSCORE_DETAILLEE_EXCEL'
+            elif ext == 'pdf':
+                # Lire le PDF pour détecter le type
+                import pdfplumber
+                with pdfplumber.open(temp_path) as pdf:
+                    text = ""
+                    for page in pdf.pages[:2]:
+                        page_text = page.extract_text()
+                        if page_text:
+                            text += page_text + "\n"
+                pdf_type = detect_pdf_type(text, filename)
+            else:
+                pdf_type = 'UNKNOWN'
+            
+            file_info.append({
+                'filename': filename,
+                'path': temp_path,
+                'type': pdf_type
+            })
+            print(f"📁 Fichier détecté: {filename} → {pdf_type}")
         
-        # Upload vers Blob Storage
-        print(f"📤 Upload du PDF vers Blob Storage: {filename}")
-        blob_url = storage.upload_pdf(file_stream, filename)
-        print(f"✅ PDF uploadé: {blob_url}")
+        # Étape 2: Trouver le fichier FIBA Box Score (obligatoire)
+        fiba_file = next((f for f in file_info if f['type'] == 'FIBA_BOX_SCORE'), None)
         
-        # Réinitialiser le stream pour l'extraction
-        file_stream.seek(0)
-        
-        # Extraire les stats
-        print(f"📊 Extraction des stats du PDF...")
-        result = extract_from_pdf(file_stream)
-        
-        if not result.get('success'):
+        if not fiba_file:
+            # Nettoyer les fichiers temporaires
+            for f in file_info:
+                try:
+                    os.remove(f['path'])
+                except:
+                    pass
             return jsonify({
                 'success': False,
-                'error': result.get('error', 'Erreur lors de l\'extraction')
+                'error': 'Fichier FIBA Box Score non trouvé parmi les fichiers uploadés'
             }), 400
         
-        # Insérer le match
-        match_data = result['data']['match_info']
-        match_data['pdf_source'] = result['data']['source']
-        match_data['pdf_blob_url'] = blob_url
+        # Étape 3: Extraire le FIBA Box Score (crée le match)
+        print(f"\n📊 Extraction FIBA Box Score: {fiba_file['filename']}")
+        result = extract_from_pdf(fiba_file['path'])
+        
+        if not result or not result.get('match_info'):
+            for f in file_info:
+                try:
+                    os.remove(f['path'])
+                except:
+                    pass
+            return jsonify({
+                'success': False,
+                'error': 'Erreur lors de l\'extraction du FIBA Box Score'
+            }), 400
+        
+        # Préparer et insérer le match
+        match_data = result['match_info']
+        match_data['pdf_source'] = fiba_file['filename']
+        
+        if 'date' in match_data and match_data['date']:
+            match_data['date'] = parse_french_date(match_data['date'])
         
         match_id = db.insert_match(match_data)
         print(f"✅ Match {match_id} inséré")
         
         # Insérer les stats des joueuses
-        for player in result['data']['stats_joueuses']:
+        player_stats = result.get('player_stats', [])
+        for player in player_stats:
+            if 'minutes' in player:
+                player['minutes'] = convert_minutes_to_int(player['minutes'])
             db.insert_player_stats(match_id, player)
-        print(f"✅ {len(result['data']['stats_joueuses'])} joueuses insérées")
+        print(f"✅ {len(player_stats)} joueuses insérées")
         
         # Insérer les stats des équipes
-        for team in result['data']['stats_equipes']:
+        team_stats = result.get('team_stats', [])
+        for team in team_stats:
             db.insert_team_stats(match_id, team)
-        print(f"✅ {len(result['data']['stats_equipes'])} équipes insérées")
+        print(f"✅ {len(team_stats)} équipes insérées")
         
-        # Insérer les combinaisons de 5 si disponibles
-        if 'combinaisons_5' in result['data']:
-            for lineup in result['data']['combinaisons_5']:
-                db.insert_lineup(match_id, lineup)
-            print(f"✅ {len(result['data']['combinaisons_5'])} combinaisons insérées")
+        # Compteurs pour le résumé
+        lineups_count = 0
+        periods_count = 0
+        advanced_stats = {}
         
+        # Étape 4: Traiter les autres fichiers
+        for f in file_info:
+            if f['type'] == 'FIBA_BOX_SCORE':
+                continue  # Déjà traité
+            
+            try:
+                if f['type'] == 'ANALYSE_5':
+                    print(f"\n📊 Extraction Analyse des 5: {f['filename']}")
+                    analyse_result = extract_from_pdf(f['path'])
+                    if analyse_result and analyse_result.get('lineup_stats'):
+                        for lineup in analyse_result['lineup_stats']:
+                            db.insert_lineup(match_id, lineup)
+                        lineups_count = len(analyse_result['lineup_stats'])
+                        print(f"✅ {lineups_count} combinaisons de 5 insérées")
+                
+                elif f['type'] == 'BOXSCORE_DETAILLEE':
+                    print(f"\n📊 Extraction Boxscore Détaillée (PDF): {f['filename']}")
+                    boxscore_result = extract_from_pdf(f['path'])
+                    if boxscore_result:
+                        # Insérer les stats par période si présentes
+                        if boxscore_result.get('period_stats'):
+                            db.delete_period_stats(match_id)
+                            for period in boxscore_result['period_stats']:
+                                db.insert_period_stats(match_id, period)
+                            periods_count = len(boxscore_result['period_stats'])
+                        
+                        # Mettre à jour le flag
+                        with db.get_connection() as conn:
+                            cursor = conn.cursor()
+                            cursor.execute('UPDATE matchs SET has_boxscore_detaillee = TRUE WHERE id = %s', (match_id,))
+                            conn.commit()
+                        print(f"✅ Boxscore Détaillée traitée ({periods_count} périodes)")
+                
+                elif f['type'] == 'BOXSCORE_DETAILLEE_EXCEL':
+                    print(f"\n📊 Extraction Boxscore Détaillée (Excel): {f['filename']}")
+                    boxscore_result = extract_boxscore_detaillee_excel(f['path'])
+                    if boxscore_result:
+                        if boxscore_result.get('period_stats'):
+                            db.delete_period_stats(match_id)
+                            for period in boxscore_result['period_stats']:
+                                db.insert_period_stats(match_id, period)
+                            periods_count = len(boxscore_result['period_stats'])
+                        
+                        with db.get_connection() as conn:
+                            cursor = conn.cursor()
+                            cursor.execute('UPDATE matchs SET has_boxscore_detaillee = TRUE WHERE id = %s', (match_id,))
+                            conn.commit()
+                        print(f"✅ Boxscore Détaillée Excel traitée ({periods_count} périodes)")
+                
+                elif f['type'] == 'STATS_DETAILLEES':
+                    print(f"\n📊 Extraction Statistiques Détaillées: {f['filename']}")
+                    stats_result = extract_stats_detaillees(f['path'])
+                    if stats_result and stats_result.get('stats_detaillees'):
+                        advanced_stats = stats_result['stats_detaillees'].get('advanced', {})
+                        # Stocker les stats avancées dans la table stats_equipes
+                        if advanced_stats:
+                            db.update_match_advanced_stats(match_id, advanced_stats)
+                        print(f"✅ Stats détaillées traitées: {list(advanced_stats.keys())}")
+                
+                elif f['type'] in ['EVALUATION_JOUEUSE', 'ZONES_TIRS', 'POSITION_TIRS']:
+                    print(f"⏭️ Fichier ignoré (non nécessaire): {f['filename']}")
+                
+            except Exception as e:
+                print(f"⚠️ Erreur traitement {f['filename']}: {e}")
+        
+        # Étape 5: Nettoyer les fichiers temporaires
+        for f in file_info:
+            try:
+                os.remove(f['path'])
+            except:
+                pass
+        
+        # Retourner le résumé
         return jsonify({
             'success': True,
             'match_id': match_id,
-            'source': result['data']['source'],
+            'files_processed': len(file_info),
+            'files_details': [{'filename': f['filename'], 'type': f['type']} for f in file_info],
+            'lineups_count': lineups_count,
+            'periods_count': periods_count,
+            'advanced_stats': list(advanced_stats.keys()) if advanced_stats else [],
             'message': f'Match importé avec succès (ID: {match_id})'
         })
         
@@ -355,11 +537,346 @@ def upload_pdf():
             'success': False,
             'error': str(e)
         }), 500
+        
+    except Exception as e:
+        print(f"❌ Erreur lors de l'upload: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/matches/<int:match_id>', methods=['DELETE'])
+def delete_match(match_id):
+    """Supprimer un match et toutes ses données associées"""
+    try:
+        print(f"🗑️ Suppression du match {match_id}...")
+        
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Supprimer dans l'ordre (foreign keys)
+            cursor.execute('DELETE FROM combinaisons_5 WHERE match_id = %s', (match_id,))
+            deleted_combos = cursor.rowcount
+            
+            cursor.execute('DELETE FROM stats_equipes WHERE match_id = %s', (match_id,))
+            deleted_teams = cursor.rowcount
+            
+            cursor.execute('DELETE FROM stats_joueuses WHERE match_id = %s', (match_id,))
+            deleted_players = cursor.rowcount
+            
+            cursor.execute('DELETE FROM matchs WHERE id = %s', (match_id,))
+            deleted_match = cursor.rowcount
+            
+            conn.commit()
+        
+        if deleted_match == 0:
+            return jsonify({
+                'success': False,
+                'error': f'Match {match_id} non trouvé'
+            }), 404
+        
+        print(f"✅ Match {match_id} supprimé")
+        return jsonify({
+            'success': True,
+            'message': f'Match {match_id} supprimé',
+            'deleted': {
+                'match': deleted_match,
+                'joueuses': deleted_players,
+                'equipes': deleted_teams,
+                'combinaisons': deleted_combos
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ Erreur suppression: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/api/matches/<int:match_id>/lineups/upload', methods=['POST'])
+def upload_lineups(match_id):
+    """Upload de l'analyse des 5 pour un match existant"""
+    import tempfile
+    
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'Aucun fichier fourni'}), 400
+    
+    file = request.files['file']
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({'success': False, 'error': 'Fichier PDF requis'}), 400
+    
+    try:
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, secure_filename(file.filename))
+        file.save(temp_path)
+        
+        print(f"📊 Extraction Analyse des 5 pour match {match_id}: {temp_path}")
+        result = extract_from_pdf(temp_path)
+        
+        try:
+            os.remove(temp_path)
+        except:
+            pass
+        
+        if not result or not result.get('lineup_stats'):
+            return jsonify({
+                'success': False,
+                'error': 'Aucune donnée de combinaisons trouvée dans le PDF'
+            }), 400
+        
+        # Supprimer les anciennes combinaisons
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM combinaisons_5 WHERE match_id = %s', (match_id,))
+            conn.commit()
+        
+        # Insérer les nouvelles
+        count = 0
+        for lineup in result['lineup_stats']:
+            db.insert_lineup(match_id, lineup)
+            count += 1
+        
+        print(f"✅ {count} combinaisons insérées pour match {match_id}")
+        return jsonify({
+            'success': True,
+            'count': count,
+            'message': f'{count} combinaisons importées'
+        })
+        
+    except Exception as e:
+        print(f"❌ Erreur upload lineups: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/matches/<int:match_id>/lineups', methods=['DELETE'])
+def delete_lineups(match_id):
+    """Supprimer les combinaisons de 5 d'un match"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('DELETE FROM combinaisons_5 WHERE match_id = %s', (match_id,))
+            deleted = cursor.rowcount
+            conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'deleted': deleted,
+            'message': f'{deleted} combinaisons supprimées'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/matches/<int:match_id>/advanced-stats/upload', methods=['POST'])
+def upload_advanced_stats(match_id):
+    """Upload de la boxscore détaillée pour un match existant (PDF ou Excel)"""
+    import tempfile
+    
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'Aucun fichier fourni'}), 400
+    
+    file = request.files['file']
+    filename = file.filename.lower()
+    
+    if filename == '':
+        return jsonify({'success': False, 'error': 'Nom de fichier vide'}), 400
+    
+    # Accepter PDF et Excel
+    allowed_extensions = ['pdf', 'xlsx', 'xls']
+    ext = filename.rsplit('.', 1)[-1] if '.' in filename else ''
+    if ext not in allowed_extensions:
+        return jsonify({'success': False, 'error': 'Fichier PDF ou Excel requis'}), 400
+    
+    try:
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, secure_filename(file.filename))
+        file.save(temp_path)
+        
+        print(f"📊 Extraction Boxscore Détaillée pour match {match_id}: {temp_path}")
+        
+        # Choisir la méthode d'extraction selon le type de fichier
+        if ext in ['xlsx', 'xls']:
+            result = extract_boxscore_detaillee_excel(temp_path)
+        else:
+            result = extract_from_pdf(temp_path)
+        
+        try:
+            os.remove(temp_path)
+        except:
+            pass
+        
+        if not result:
+            return jsonify({
+                'success': False,
+                'error': 'Erreur lors de l\'extraction du fichier'
+            }), 400
+        
+        # Supprimer les anciennes stats par période
+        db.delete_period_stats(match_id)
+        
+        # Insérer les nouvelles stats par période
+        period_count = 0
+        if result.get('period_stats'):
+            for period in result['period_stats']:
+                db.insert_period_stats(match_id, period)
+                period_count += 1
+        
+        # Mettre à jour les stats avancées d'équipe
+        if result.get('team_advanced_stats'):
+            # Pour l'instant on stocke pour CSMF
+            db.update_team_advanced_stats(match_id, 'CSMF PARIS', result['team_advanced_stats'])
+        
+        # Marquer le match comme ayant une boxscore détaillée
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE matchs SET has_boxscore_detaillee = TRUE WHERE id = %s
+            ''', (match_id,))
+            conn.commit()
+        
+        print(f"✅ Boxscore détaillée importée pour match {match_id}: {period_count} périodes")
+        return jsonify({
+            'success': True,
+            'message': f'Stats avancées importées ({period_count} périodes)'
+        })
+        
+    except Exception as e:
+        print(f"❌ Erreur upload advanced stats: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/matches/<int:match_id>/advanced-stats', methods=['DELETE'])
+def delete_advanced_stats(match_id):
+    """Supprimer les stats avancées d'un match"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE matchs SET has_boxscore_detaillee = FALSE WHERE id = %s
+            ''', (match_id,))
+            conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Stats avancées supprimées'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/matches/<int:match_id>/stats-detaillees/upload', methods=['POST'])
+def upload_stats_detaillees(match_id):
+    """Upload de la feuille de statistiques détaillées pour un match existant"""
+    import tempfile
+    
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'Aucun fichier fourni'}), 400
+    
+    file = request.files['file']
+    filename = file.filename.lower()
+    
+    if filename == '':
+        return jsonify({'success': False, 'error': 'Nom de fichier vide'}), 400
+    
+    if not filename.endswith('.pdf'):
+        return jsonify({'success': False, 'error': 'Fichier PDF requis'}), 400
+    
+    try:
+        temp_dir = tempfile.gettempdir()
+        temp_path = os.path.join(temp_dir, secure_filename(file.filename))
+        file.save(temp_path)
+        
+        print(f"📊 Extraction Stats Détaillées pour match {match_id}: {temp_path}")
+        
+        # Extraire les stats détaillées
+        result = extract_stats_detaillees(temp_path)
+        
+        try:
+            os.remove(temp_path)
+        except:
+            pass
+        
+        if not result or not result.get('stats_detaillees'):
+            return jsonify({
+                'success': False,
+                'error': 'Erreur lors de l\'extraction du fichier (pas de stats détaillées trouvées)'
+            }), 400
+        
+        # Mettre à jour le match avec les stats avancées d'équipe
+        stats = result['stats_detaillees'].get('advanced', {})
+        players_updated = 0
+        
+        if stats:
+            db.update_match_advanced_stats(match_id, stats)
+            print(f"✅ Stats équipe importées pour match {match_id}: {list(stats.keys())}")
+        
+        # Mettre à jour les stats des joueuses (tirs 2pts int/ext, dunks)
+        player_details = result['stats_detaillees'].get('player_details', [])
+        if player_details:
+            players_updated = db.update_players_detailed_stats(match_id, player_details)
+            print(f"✅ Stats joueuses mises à jour: {players_updated} joueuses")
+        
+        return jsonify({
+            'success': True,
+            'message': f'Stats détaillées importées ({len(stats)} métriques équipe, {players_updated} joueuses)'
+        })
+        
+    except Exception as e:
+        print(f"❌ Erreur upload stats détaillées: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/matches/<int:match_id>/stats-detaillees', methods=['DELETE'])
+def delete_stats_detaillees(match_id):
+    """Supprimer les stats détaillées d'un match"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            # Remettre à NULL toutes les colonnes de stats détaillées
+            cursor.execute('''
+                UPDATE matchs SET 
+                    points_raquette_dom = NULL,
+                    points_raquette_ext = NULL,
+                    points_contre_attaque_dom = NULL,
+                    points_contre_attaque_ext = NULL,
+                    points_2eme_chance_dom = NULL,
+                    points_2eme_chance_ext = NULL,
+                    avantage_max_dom = NULL,
+                    avantage_max_ext = NULL,
+                    serie_max_dom = NULL,
+                    serie_max_ext = NULL,
+                    egalites = NULL,
+                    changements_leader = NULL,
+                    pts_5_depart_dom = NULL,
+                    pts_5_depart_ext = NULL,
+                    pts_banc_dom = NULL,
+                    pts_banc_ext = NULL
+                WHERE id = %s
+            ''', (match_id,))
+            conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Stats détaillées supprimées'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/reset-database', methods=['POST'])
 def reset_database():
     """
-    DANGER: Vide complètement la base de données
+    DANGER: Vide complètement la base de données et recrée les tables proprement
     À utiliser seulement pour recommencer l'import à zéro
     """
     # Vérifier un token de sécurité
@@ -375,45 +892,209 @@ def reset_database():
     try:
         print("⚠️ RESET DATABASE - Suppression de toutes les données...")
         
-        # Supprimer dans l'ordre (à cause des foreign keys)
+        deleted_counts = {
+            'matchs': 0,
+            'stats_joueuses': 0,
+            'stats_equipes': 0,
+            'combinaisons_5': 0,
+            'stats_periodes': 0
+        }
+        
         with db.get_connection() as conn:
             cursor = conn.cursor()
             
-            cursor.execute('DELETE FROM combinaisons_5')
-            deleted_combos = cursor.rowcount
+            # Drop toutes les tables (CASCADE gère les foreign keys)
+            # On ne fait pas de DELETE avant car DROP suffit
+            cursor.execute('DROP TABLE IF EXISTS stats_periodes CASCADE')
+            cursor.execute('DROP TABLE IF EXISTS combinaisons_5 CASCADE')
+            cursor.execute('DROP TABLE IF EXISTS stats_equipes CASCADE')
+            cursor.execute('DROP TABLE IF EXISTS stats_joueuses CASCADE')
+            cursor.execute('DROP TABLE IF EXISTS matchs CASCADE')
             
-            cursor.execute('DELETE FROM stats_equipes')
-            deleted_teams = cursor.rowcount
+            conn.commit()
             
-            cursor.execute('DELETE FROM stats_joueuses')
-            deleted_players = cursor.rowcount
+            # Recréer les tables avec la bonne structure
+            # Table matchs
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS matchs (
+                    id SERIAL PRIMARY KEY,
+                    match_no VARCHAR(50),
+                    date DATE,
+                    heure VARCHAR(10),
+                    competition VARCHAR(255),
+                    saison VARCHAR(20),
+                    equipe_domicile VARCHAR(255),
+                    equipe_exterieur VARCHAR(255),
+                    score_domicile INTEGER,
+                    score_exterieur INTEGER,
+                    q1_domicile INTEGER DEFAULT 0,
+                    q1_exterieur INTEGER DEFAULT 0,
+                    q2_domicile INTEGER DEFAULT 0,
+                    q2_exterieur INTEGER DEFAULT 0,
+                    q3_domicile INTEGER DEFAULT 0,
+                    q3_exterieur INTEGER DEFAULT 0,
+                    q4_domicile INTEGER DEFAULT 0,
+                    q4_exterieur INTEGER DEFAULT 0,
+                    lieu VARCHAR(255),
+                    ville VARCHAR(255),
+                    affluence INTEGER,
+                    arbitres TEXT,
+                    pdf_source VARCHAR(255),
+                    pdf_blob_url TEXT,
+                    has_boxscore_detaillee BOOLEAN DEFAULT FALSE,
+                    -- Stats avancées (depuis Statistiques Détaillées)
+                    points_raquette_dom INTEGER DEFAULT 0,
+                    points_raquette_ext INTEGER DEFAULT 0,
+                    points_contre_attaque_dom INTEGER DEFAULT 0,
+                    points_contre_attaque_ext INTEGER DEFAULT 0,
+                    points_2eme_chance_dom INTEGER DEFAULT 0,
+                    points_2eme_chance_ext INTEGER DEFAULT 0,
+                    avantage_max_dom INTEGER DEFAULT 0,
+                    avantage_max_ext INTEGER DEFAULT 0,
+                    serie_max_dom VARCHAR(20),
+                    serie_max_ext VARCHAR(20),
+                    egalites INTEGER DEFAULT 0,
+                    changements_leader INTEGER DEFAULT 0,
+                    pts_5_depart_dom INTEGER DEFAULT 0,
+                    pts_5_depart_ext INTEGER DEFAULT 0,
+                    pts_banc_dom INTEGER DEFAULT 0,
+                    pts_banc_ext INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
             
-            cursor.execute('DELETE FROM matchs')
-            deleted_matchs = cursor.rowcount
+            # Table stats_joueuses
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS stats_joueuses (
+                    id SERIAL PRIMARY KEY,
+                    match_id INTEGER REFERENCES matchs(id) ON DELETE CASCADE,
+                    equipe VARCHAR(255) NOT NULL,
+                    numero INTEGER,
+                    nom VARCHAR(255) NOT NULL,
+                    prenom VARCHAR(255),
+                    minutes INTEGER DEFAULT 0,
+                    points INTEGER DEFAULT 0,
+                    tirs_reussis INTEGER DEFAULT 0,
+                    tirs_tentes INTEGER DEFAULT 0,
+                    tirs_2pts_reussis INTEGER DEFAULT 0,
+                    tirs_2pts_tentes INTEGER DEFAULT 0,
+                    tirs_3pts_reussis INTEGER DEFAULT 0,
+                    tirs_3pts_tentes INTEGER DEFAULT 0,
+                    lf_reussis INTEGER DEFAULT 0,
+                    lf_tentes INTEGER DEFAULT 0,
+                    rebonds_offensifs INTEGER DEFAULT 0,
+                    rebonds_defensifs INTEGER DEFAULT 0,
+                    rebonds_total INTEGER DEFAULT 0,
+                    passes_decisives INTEGER DEFAULT 0,
+                    interceptions INTEGER DEFAULT 0,
+                    balles_perdues INTEGER DEFAULT 0,
+                    contres INTEGER DEFAULT 0,
+                    fautes_provoquees INTEGER DEFAULT 0,
+                    fautes_commises INTEGER DEFAULT 0,
+                    plus_moins INTEGER DEFAULT 0,
+                    evaluation INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
             
-            # Reset les sequences
-            cursor.execute('ALTER SEQUENCE matchs_id_seq RESTART WITH 1')
-            cursor.execute('ALTER SEQUENCE stats_joueuses_id_seq RESTART WITH 1')
-            cursor.execute('ALTER SEQUENCE stats_equipes_id_seq RESTART WITH 1')
-            cursor.execute('ALTER SEQUENCE combinaisons_5_id_seq RESTART WITH 1')
+            # Table stats_equipes
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS stats_equipes (
+                    id SERIAL PRIMARY KEY,
+                    match_id INTEGER REFERENCES matchs(id) ON DELETE CASCADE,
+                    equipe VARCHAR(255) NOT NULL,
+                    points INTEGER DEFAULT 0,
+                    tirs_reussis INTEGER DEFAULT 0,
+                    tirs_tentes INTEGER DEFAULT 0,
+                    tirs_2pts_reussis INTEGER DEFAULT 0,
+                    tirs_2pts_tentes INTEGER DEFAULT 0,
+                    tirs_3pts_reussis INTEGER DEFAULT 0,
+                    tirs_3pts_tentes INTEGER DEFAULT 0,
+                    lf_reussis INTEGER DEFAULT 0,
+                    lf_tentes INTEGER DEFAULT 0,
+                    rebonds_offensifs INTEGER DEFAULT 0,
+                    rebonds_defensifs INTEGER DEFAULT 0,
+                    rebonds_total INTEGER DEFAULT 0,
+                    passes_decisives INTEGER DEFAULT 0,
+                    interceptions INTEGER DEFAULT 0,
+                    balles_perdues INTEGER DEFAULT 0,
+                    contres INTEGER DEFAULT 0,
+                    fautes_commises INTEGER DEFAULT 0,
+                    points_balles_perdues INTEGER DEFAULT 0,
+                    points_raquette INTEGER DEFAULT 0,
+                    points_contre_attaque INTEGER DEFAULT 0,
+                    points_2eme_chance INTEGER DEFAULT 0,
+                    points_banc INTEGER DEFAULT 0,
+                    pct_rebonds_offensifs REAL DEFAULT 0.0,
+                    pct_rebonds_defensifs REAL DEFAULT 0.0,
+                    pct_rebonds_total REAL DEFAULT 0.0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Table combinaisons_5 avec TOUTES les colonnes
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS combinaisons_5 (
+                    id SERIAL PRIMARY KEY,
+                    match_id INTEGER REFERENCES matchs(id) ON DELETE CASCADE,
+                    equipe VARCHAR(255) NOT NULL,
+                    joueurs TEXT NOT NULL,
+                    duree_secondes INTEGER DEFAULT 0,
+                    points_marques INTEGER DEFAULT 0,
+                    points_encaisses INTEGER DEFAULT 0,
+                    plus_minus INTEGER DEFAULT 0,
+                    rebonds INTEGER DEFAULT 0,
+                    interceptions INTEGER DEFAULT 0,
+                    balles_perdues INTEGER DEFAULT 0,
+                    passes_decisives INTEGER DEFAULT 0,
+                    pts_par_minute REAL DEFAULT 0.0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Table stats_periodes
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS stats_periodes (
+                    id SERIAL PRIMARY KEY,
+                    match_id INTEGER REFERENCES matchs(id) ON DELETE CASCADE,
+                    equipe VARCHAR(255) NOT NULL,
+                    periode INTEGER NOT NULL,
+                    points INTEGER DEFAULT 0,
+                    tirs_reussis INTEGER DEFAULT 0,
+                    tirs_tentes INTEGER DEFAULT 0,
+                    tirs_2pts_reussis INTEGER DEFAULT 0,
+                    tirs_2pts_tentes INTEGER DEFAULT 0,
+                    tirs_3pts_reussis INTEGER DEFAULT 0,
+                    tirs_3pts_tentes INTEGER DEFAULT 0,
+                    lf_reussis INTEGER DEFAULT 0,
+                    lf_tentes INTEGER DEFAULT 0,
+                    rebonds_offensifs INTEGER DEFAULT 0,
+                    rebonds_defensifs INTEGER DEFAULT 0,
+                    rebonds_total INTEGER DEFAULT 0,
+                    passes_decisives INTEGER DEFAULT 0,
+                    interceptions INTEGER DEFAULT 0,
+                    balles_perdues INTEGER DEFAULT 0,
+                    fautes_commises INTEGER DEFAULT 0,
+                    evaluation INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            # Indexes
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_matchs_date ON matchs(date DESC)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_stats_match ON stats_joueuses(match_id)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_equipes_match ON stats_equipes(match_id)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_lineups_match ON combinaisons_5(match_id)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_periodes_match ON stats_periodes(match_id)')
             
             conn.commit()
         
-        print(f"✅ Base vidée:")
-        print(f"  • {deleted_matchs} matchs supprimés")
-        print(f"  • {deleted_players} stats joueuses supprimées")
-        print(f"  • {deleted_teams} stats équipes supprimées")
-        print(f"  • {deleted_combos} combinaisons supprimées")
+        print("✅ Base vidée et tables recréées avec succès!")
         
         return jsonify({
             'success': True,
-            'message': 'Base de données vidée',
-            'deleted': {
-                'matchs': deleted_matchs,
-                'stats_joueuses': deleted_players,
-                'stats_equipes': deleted_teams,
-                'combinaisons_5': deleted_combos
-            }
+            'message': 'Base de données vidée et tables recréées',
+            'deleted': deleted_counts
         })
         
     except Exception as e:
@@ -780,6 +1461,95 @@ def get_calendar_info():
         }), 500
 
 
+# ============================================================
+# ROUTES CHAT IA ANALYSTE
+# ============================================================
+
+@app.route('/api/chat', methods=['POST'])
+def chat_endpoint():
+    """Endpoint pour le chat IA analyste"""
+    if not CHAT_AVAILABLE:
+        return jsonify({
+            'success': False,
+            'error': 'Module chat non disponible'
+        }), 503
+    
+    data = request.get_json()
+    if not data or 'question' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Question requise'
+        }), 400
+    
+    question = data.get('question', '').strip()
+    if not question:
+        return jsonify({
+            'success': False,
+            'error': 'Question vide'
+        }), 400
+    
+    # Récupérer l'historique de conversation si présent
+    conversation_history = data.get('conversation_history', [])
+    
+    # Match spécifique optionnel
+    match_id = data.get('match_id')
+    
+    try:
+        result = chat_analyst.chat(
+            question=question,
+            db=db,
+            conversation_history=conversation_history,
+            match_id=match_id
+        )
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'response': f"Erreur lors de l'analyse : {str(e)}"
+        }), 500
+
+
+@app.route('/api/chat/suggestions', methods=['GET'])
+def chat_suggestions():
+    """Retourne des suggestions de questions"""
+    if not CHAT_AVAILABLE:
+        return jsonify({
+            'success': False,
+            'error': 'Module chat non disponible'
+        }), 503
+    
+    return jsonify({
+        'success': True,
+        'suggestions': chat_analyst.get_suggested_questions()
+    })
+
+
+@app.route('/api/chat/status', methods=['GET'])
+def chat_status():
+    """Vérifie si le chat est disponible et configuré"""
+    if not CHAT_AVAILABLE:
+        return jsonify({
+            'available': False,
+            'reason': 'Module chat non importé'
+        })
+    
+    api_key = os.environ.get('ANTHROPIC_API_KEY')
+    if not api_key:
+        return jsonify({
+            'available': False,
+            'reason': 'ANTHROPIC_API_KEY non configurée'
+        })
+    
+    return jsonify({
+        'available': True,
+        'model': 'claude-sonnet-4-20250514'
+    })
+
 
 if __name__ == '__main__':
     print("\n" + "="*60)
@@ -807,6 +1577,9 @@ if __name__ == '__main__':
         print("  🏆 GET  /api/calendar/classement  - Classement")
         print("  ℹ️  GET  /api/calendar/info       - Info sur le cache")
         print("  🔄 POST /api/calendar/update      - Forcer MAJ cache")
+    print("\n🤖 Chat IA Analyste:")
+    print("  💬 POST /api/chat                 - Poser une question")
+    print("  💡 GET  /api/chat/suggestions     - Questions suggérées")
     print("\n" + "="*60)
     print("🚀 Serveur démarré sur http://0.0.0.0:8000")
     print("="*60 + "\n")

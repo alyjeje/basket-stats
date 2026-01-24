@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BasketStats Pro - Statistiques Basketball pour Clubs</title>
+    <meta name="description" content="Solution complète de statistiques basketball pour clubs. Import automatique des PDFs fédération, analyses avancées, combinaisons de 5.">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --secondary: #f97316;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f1f5f9;
+            --white: #ffffff;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo span {
+            color: var(--secondary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%);
+            display: flex;
+            align-items: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='10'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        .hero-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-text h1 span {
+            color: var(--secondary);
+        }
+        
+        .hero-text p {
+            font-size: 1.25rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .hero-image {
+            position: relative;
+        }
+        
+        .hero-image img {
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+        
+        .hero-badge {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            background: var(--secondary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.4);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--light);
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            font-size: 1.25rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--dark);
+        }
+        
+        .feature-card p {
+            color: var(--gray);
+        }
+        
+        /* Pricing Section */
+        .pricing {
+            padding: 6rem 2rem;
+            background: white;
+        }
+        
+        .pricing-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            position: relative;
+            border: 2px solid var(--light);
+        }
+        
+        .pricing-card.popular {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pricing-card .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+        
+        .pricing-card .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--gray);
+        }
+        
+        .pricing-card .price-annual {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+        
+        .pricing-features li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .pricing-features .check {
+            color: #22c55e;
+            font-weight: bold;
+        }
+        
+        .pricing-features .cross {
+            color: #ef4444;
+        }
+        
+        .pricing-card .btn {
+            width: 100%;
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            padding: 6rem 2rem;
+            background: var(--dark);
+            color: white;
+        }
+        
+        .testimonials .section-title h2 {
+            color: white;
+        }
+        
+        .testimonials .section-title p {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .testimonials-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+        
+        .testimonial-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 16px;
+        }
+        
+        .testimonial-card p {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .testimonial-author img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+        }
+        
+        .testimonial-author strong {
+            display: block;
+        }
+        
+        .testimonial-author span {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+        }
+        
+        /* CTA Section */
+        .cta {
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, var(--secondary) 0%, #ea580c 100%);
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .cta p {
+            font-size: 1.25rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta .btn {
+            font-size: 1.125rem;
+            padding: 1rem 2rem;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 2rem 2rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+        }
+        
+        .footer-brand .logo {
+            margin-bottom: 1rem;
+        }
+        
+        .footer-brand p {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .footer-links h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links a {
+            display: block;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 3rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-content,
+            .features-grid,
+            .pricing-grid,
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-card.popular {
+                transform: none;
+            }
+            
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        /* Auth Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .modal h2 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal p {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--light);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .form-switch {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--gray);
+        }
+        
+        .form-switch a {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-error {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+        
+        .alert-success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border: 1px solid #bbf7d0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            🏀 BasketStats<span>Pro</span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Fonctionnalités</a>
+            <a href="#pricing">Tarifs</a>
+            <a href="#testimonials">Témoignages</a>
+            <a href="#" onclick="openModal('login')">Connexion</a>
+            <a href="#" class="btn btn-primary" onclick="openModal('register')">Essai Gratuit</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Vos statistiques basket <span>au niveau pro</span></h1>
+                <p>Import automatique des PDFs fédération, analyses avancées, combinaisons de 5... Tout ce dont votre club a besoin pour progresser.</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-secondary" onclick="openModal('register')">🚀 Démarrer l'essai gratuit</a>
+                    <a href="#features" class="btn btn-outline" style="color: white; border-color: white;">En savoir plus</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); border-radius: 16px; padding: 30px; color: white;">
+                    <h3 style="margin-bottom: 20px;">📊 Dashboard CSMF Paris</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2em; font-weight: bold;">12</div>
+                            <div style="font-size: 0.85em; opacity: 0.8;">Matchs</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2em; font-weight: bold;">67%</div>
+                            <div style="font-size: 0.85em; opacity: 0.8;">Victoires</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 2em; font-weight: bold;">72.4</div>
+                            <div style="font-size: 0.85em; opacity: 0.8;">Pts/match</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px;">
+                        <div style="font-weight: bold; margin-bottom: 10px;">🏀 Meilleure combinaison</div>
+                        <div style="font-size: 0.9em;">JACOB / SOYEZ / REGANI / PIGNARRE / KNOBLOCH</div>
+                        <div style="color: #4ade80; margin-top: 5px;">+18 en 45 min</div>
+                    </div>
+                </div>
+                <div class="hero-badge">14 jours gratuits</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-title">
+            <h2>Tout ce dont votre club a besoin</h2>
+            <p>Des fonctionnalités pensées par des passionnés de basket, pour des passionnés de basket</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>Import automatique</h3>
+                <p>Importez directement les PDFs de la fédération (FIBA Box Score, Analyse des 5, Boxscore Détaillée). Fini la saisie manuelle !</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Stats individuelles</h3>
+                <p>Suivez les performances de chaque joueuse : points, rebonds, passes, pourcentages de tir, évaluation...</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏀</div>
+                <h3>Combinaisons de 5</h3>
+                <p>Analysez vos meilleures compositions : temps de jeu, +/-, points marqués et encaissés par combinaison.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>Stats avancées</h3>
+                <p>Points dans la raquette, contre-attaque, 2ème chance, momentum... Allez au-delà des stats de base.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>IA Analyste</h3>
+                <p>Posez vos questions en langage naturel : "Quelle est notre meilleure combinaison contre les zones ?"</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Accès mobile</h3>
+                <p>Consultez vos stats depuis n'importe quel appareil. Interface responsive et moderne.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="section-title">
+            <h2>Des tarifs adaptés à chaque club</h2>
+            <p>Commencez gratuitement, évoluez selon vos besoins</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>Essentiel</h3>
+                <div class="price">39€<span>/mois</span></div>
+                <div class="price-annual">ou 380€/an (2 mois offerts)</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> Import PDFs illimité</li>
+                    <li><span class="check">✓</span> Stats joueuses</li>
+                    <li><span class="check">✓</span> Stats équipe</li>
+                    <li><span class="check">✓</span> Historique saison</li>
+                    <li><span class="cross">✗</span> Combinaisons de 5</li>
+                    <li><span class="cross">✗</span> Stats avancées</li>
+                    <li><span class="cross">✗</span> Chat IA</li>
+                    <li>1 équipe • 2 utilisateurs</li>
+                </ul>
+                <a href="#" class="btn btn-outline" onclick="openModal('register')">Choisir</a>
+            </div>
+            <div class="pricing-card popular">
+                <div class="popular-badge">Le plus populaire</div>
+                <h3>Pro</h3>
+                <div class="price">79€<span>/mois</span></div>
+                <div class="price-annual">ou 780€/an (2 mois offerts)</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> Import PDFs illimité</li>
+                    <li><span class="check">✓</span> Stats joueuses</li>
+                    <li><span class="check">✓</span> Stats équipe</li>
+                    <li><span class="check">✓</span> Historique saison</li>
+                    <li><span class="check">✓</span> Combinaisons de 5</li>
+                    <li><span class="check">✓</span> Stats avancées</li>
+                    <li><span class="cross">✗</span> Chat IA</li>
+                    <li>3 équipes • 5 utilisateurs</li>
+                </ul>
+                <a href="#" class="btn btn-primary" onclick="openModal('register')">Choisir</a>
+            </div>
+            <div class="pricing-card">
+                <h3>Premium</h3>
+                <div class="price">139€<span>/mois</span></div>
+                <div class="price-annual">ou 1 380€/an (2 mois offerts)</div>
+                <ul class="pricing-features">
+                    <li><span class="check">✓</span> Import PDFs illimité</li>
+                    <li><span class="check">✓</span> Stats joueuses</li>
+                    <li><span class="check">✓</span> Stats équipe</li>
+                    <li><span class="check">✓</span> Historique saison</li>
+                    <li><span class="check">✓</span> Combinaisons de 5</li>
+                    <li><span class="check">✓</span> Stats avancées</li>
+                    <li><span class="check">✓</span> Chat IA Analyste</li>
+                    <li>Équipes illimitées • Utilisateurs illimités</li>
+                </ul>
+                <a href="#" class="btn btn-outline" onclick="openModal('register')">Choisir</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="testimonials">
+        <div class="section-title">
+            <h2>Ils nous font confiance</h2>
+            <p>Découvrez ce que nos utilisateurs pensent de BasketStats Pro</p>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <p>"On passait 2h après chaque match à saisir les stats dans Excel. Maintenant c'est fait en 30 secondes avec l'import PDF. Game changer !"</p>
+                <div class="testimonial-author">
+                    <div style="width: 50px; height: 50px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👨</div>
+                    <div>
+                        <strong>Laurent M.</strong>
+                        <span>Coach NF3</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p>"L'analyse des combinaisons de 5 nous a permis d'identifier notre meilleur lineup fin de match. On a gagné 3 matchs serrés depuis !"</p>
+                <div class="testimonial-author">
+                    <div style="width: 50px; height: 50px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👩</div>
+                    <div>
+                        <strong>Sophie D.</strong>
+                        <span>Coach NM3</span>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <p>"Le chat IA est bluffant. Je lui demande 'Qui est notre meilleure rebondeuse offensive ?' et j'ai la réponse en 2 secondes avec le contexte."</p>
+                <div class="testimonial-author">
+                    <div style="width: 50px; height: 50px; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">👨</div>
+                    <div>
+                        <strong>Marc T.</strong>
+                        <span>Président de club</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>Prêt à passer au niveau supérieur ?</h2>
+        <p>Rejoignez les clubs qui ont choisi BasketStats Pro pour leurs analyses. 14 jours d'essai gratuit, sans engagement.</p>
+        <a href="#" class="btn" style="background: white; color: var(--secondary);" onclick="openModal('register')">🚀 Démarrer maintenant</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <div class="logo">🏀 BasketStats<span>Pro</span></div>
+                <p>La solution de statistiques basketball pour les clubs ambitieux.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Produit</h4>
+                <a href="#features">Fonctionnalités</a>
+                <a href="#pricing">Tarifs</a>
+                <a href="#">Démo</a>
+            </div>
+            <div class="footer-links">
+                <h4>Support</h4>
+                <a href="#">FAQ</a>
+                <a href="#">Contact</a>
+                <a href="#">Documentation</a>
+            </div>
+            <div class="footer-links">
+                <h4>Légal</h4>
+                <a href="#">CGV</a>
+                <a href="#">Confidentialité</a>
+                <a href="#">Mentions légales</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 BasketStats Pro. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <!-- Login/Register Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <h2>Connexion</h2>
+                <p>Accédez à votre espace club</p>
+                
+                <div id="loginAlert" class="alert" style="display: none;"></div>
+                
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" required placeholder="coach@monclub.fr">
+                    </div>
+                    <div class="form-group">
+                        <label>Mot de passe</label>
+                        <input type="password" id="loginPassword" required placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Se connecter</button>
+                </form>
+                
+                <div class="form-switch">
+                    Pas encore de compte ? <a onclick="showRegister()">Créer un compte</a>
+                </div>
+            </div>
+            
+            <!-- Register Form -->
+            <div id="registerForm" style="display: none;">
+                <h2>Créer un compte</h2>
+                <p>14 jours d'essai gratuit, sans engagement</p>
+                
+                <div id="registerAlert" class="alert" style="display: none;"></div>
+                
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label>Nom du club</label>
+                        <input type="text" id="registerClub" required placeholder="Ex: CSMF Paris">
+                    </div>
+                    <div class="form-group">
+                        <label>Votre prénom</label>
+                        <input type="text" id="registerPrenom" placeholder="Jean">
+                    </div>
+                    <div class="form-group">
+                        <label>Votre nom</label>
+                        <input type="text" id="registerNom" placeholder="Dupont">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="registerEmail" required placeholder="coach@monclub.fr">
+                    </div>
+                    <div class="form-group">
+                        <label>Mot de passe</label>
+                        <input type="password" id="registerPassword" required minlength="8" placeholder="Minimum 8 caractères">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Créer mon compte</button>
+                </form>
+                
+                <div class="form-switch">
+                    Déjà un compte ? <a onclick="showLogin()">Se connecter</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const API_URL = '/api';
+        
+        // Modal functions
+        function openModal(type) {
+            document.getElementById('authModal').classList.add('active');
+            if (type === 'login') {
+                showLogin();
+            } else {
+                showRegister();
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+        
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+        
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+        
+        // Close modal on overlay click
+        document.getElementById('authModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Login handler
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const alertDiv = document.getElementById('loginAlert');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Stocker le token
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    localStorage.setItem('club', JSON.stringify(data.data.club));
+                    
+                    // Rediriger vers le dashboard
+                    window.location.href = '/app';
+                } else {
+                    alertDiv.className = 'alert alert-error';
+                    alertDiv.textContent = data.error;
+                    alertDiv.style.display = 'block';
+                }
+            } catch (error) {
+                alertDiv.className = 'alert alert-error';
+                alertDiv.textContent = 'Erreur de connexion au serveur';
+                alertDiv.style.display = 'block';
+            }
+        }
+        
+        // Register handler
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            const club_nom = document.getElementById('registerClub').value;
+            const prenom = document.getElementById('registerPrenom').value;
+            const nom = document.getElementById('registerNom').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const alertDiv = document.getElementById('registerAlert');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ club_nom, prenom, nom, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Stocker le token
+                    localStorage.setItem('token', data.data.token);
+                    localStorage.setItem('user', JSON.stringify(data.data.user));
+                    localStorage.setItem('club', JSON.stringify(data.data.club));
+                    
+                    // Rediriger vers le dashboard
+                    window.location.href = '/app';
+                } else {
+                    alertDiv.className = 'alert alert-error';
+                    alertDiv.textContent = data.error;
+                    alertDiv.style.display = 'block';
+                }
+            } catch (error) {
+                alertDiv.className = 'alert alert-error';
+                alertDiv.textContent = 'Erreur de connexion au serveur';
+                alertDiv.style.display = 'block';
+            }
+        }
+        
+        // Check if already logged in
+        if (localStorage.getItem('token')) {
+            // Optionally redirect to app or show logged in state
+        }
+    </script>
+</body>
+</html>

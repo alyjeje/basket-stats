@@ -11,6 +11,11 @@ import re
 import json
 from pathlib import Path
 from datetime import datetime
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
 
 def clean_team_name(name):
     """Nettoie un nom d'équipe"""
@@ -95,27 +100,74 @@ def parse_time_to_seconds(time_str):
         return 0
 
 def detect_pdf_type(text, filename):
-    """Détecte le type de PDF"""
-    filename_lower = filename.lower()
+    """
+    Détecte le type de PDF de manière robuste.
+    Priorité au contenu du fichier, puis au nom de fichier en fallback.
     
-    if 'analyse_des_5' in filename_lower or 'analyse des 5' in filename_lower:
-        return 'ANALYSE_5'
-    elif 'boxscore_détaillée' in filename_lower or 'boxscore détaillée' in filename_lower or 'boxscore_detaillee' in filename_lower:
-        return 'BOXSCORE_DETAILLEE'
-    elif 'fiba_box_score' in filename_lower or 'fiba box score' in filename_lower:
+    Types supportés:
+    - FIBA_BOX_SCORE: Stats de base, crée le match
+    - BOXSCORE_DETAILLEE: Stats par période, colonnes O/E et P/M
+    - ANALYSE_5: Combinaisons de 5 joueurs
+    - STATS_DETAILLEES: Tirs 2pts Int/Ext, stats avancées équipe
+    - EVALUATION_JOUEUSE: Shot charts par joueuse (pour extraction tirs)
+    - ZONES_TIRS / POSITION_TIRS: Visuels (ignorés sauf si on veut les tirs)
+    """
+    
+    # ============================================
+    # DÉTECTION PAR CONTENU (prioritaire et fiable)
+    # ============================================
+    
+    # 1. FIBA Box Score - contient explicitement "FIBA Box Score"
+    if 'FIBA Box Score' in text:
         return 'FIBA_BOX_SCORE'
-    elif 'statistiques_détaillée' in filename_lower or 'statistiques_detaillee' in filename_lower:
-        return 'STATS_DETAILLEE'
     
-    # Détection par contenu
+    # 2. Boxscore Détaillée - contient "Boxscore Détaillée" ET les colonnes O/E, P/M
+    if 'Boxscore Détaillée' in text or ('O/E' in text and 'P/M' in text):
+        return 'BOXSCORE_DETAILLEE'
+    
+    # 3. Analyse des 5 en jeu - contient explicitement ce titre
     if 'Analyse des 5 en jeu' in text or '5 en jeu' in text:
         return 'ANALYSE_5'
-    elif 'O/E' in text and 'P/M' in text:
-        return 'BOXSCORE_DETAILLEE'
-    elif 'Points de Balles Perdues' in text:
-        return 'FIBA_BOX_SCORE'
     
-    return 'FIBA_BOX_SCORE'
+    # 4. Evaluation Joueuse - contient "Evaluation Joueur" (shot charts individuels)
+    if 'Evaluation Joueur' in text:
+        return 'EVALUATION_JOUEUSE'
+    
+    # 5. Zones de Tirs - titre explicite
+    if 'Zones de Tirs' in text:
+        return 'ZONES_TIRS'
+    
+    # 6. Position des Tirs - titre explicite
+    if 'Position des Tirs' in text:
+        return 'POSITION_TIRS'
+    
+    # 7. Stats Détaillées (Feuille) - contient "2 pts Ext" et "2 pts Int" 
+    #    MAIS n'est pas Boxscore Détaillée (pas de O/E, P/M)
+    if '2 pts Ext' in text and '2 pts Int' in text:
+        return 'STATS_DETAILLEES'
+    
+    # ============================================
+    # FALLBACK PAR NOM DE FICHIER (si contenu non détecté)
+    # ============================================
+    filename_lower = filename.lower()
+    
+    if 'fiba' in filename_lower and 'box' in filename_lower:
+        return 'FIBA_BOX_SCORE'
+    elif 'analyse' in filename_lower and '5' in filename_lower:
+        return 'ANALYSE_5'
+    elif 'boxscore' in filename_lower and ('détaillé' in filename_lower or 'detaille' in filename_lower):
+        return 'BOXSCORE_DETAILLEE'
+    elif 'statistiques' in filename_lower or 'feuille' in filename_lower:
+        return 'STATS_DETAILLEES'
+    elif 'evaluation' in filename_lower:
+        return 'EVALUATION_JOUEUSE'
+    elif 'zone' in filename_lower and 'tir' in filename_lower:
+        return 'ZONES_TIRS'
+    elif 'position' in filename_lower and 'tir' in filename_lower:
+        return 'POSITION_TIRS'
+    
+    # Par défaut, essayer comme FIBA Box Score
+    return 'UNKNOWN'
 
 def extract_match_info(text):
     """Extrait les informations générales du match"""
@@ -535,6 +587,127 @@ def extract_boxscore_detaillee(pdf_path, existing_data=None):
     
     return result
 
+def extract_boxscore_detaillee_excel(excel_path, existing_data=None):
+    """Extrait les stats detaillees depuis un fichier Excel de Boxscore Detaillee"""
+    if not PANDAS_AVAILABLE:
+        print("pandas non disponible pour l'extraction Excel")
+        return existing_data
+    
+    print(f"Extraction Boxscore Detaillee Excel: {excel_path}")
+    
+    # Liste des joueuses CSMF connues pour identifier l'équipe
+    CSMF_PLAYERS = ['JACOB', 'RIMBAUD', 'SOYEZ', 'REGANI', 'PIGNARRE', 'LIPARO', 'KNOBLOCH', 'MENDES', 'UZEL', 'MUSIC', 'MUSIC PULJIC', 'MUSIC PULJK', 'MUSIC PULJI', 'MUSIC PULJIZ']
+    
+    try:
+        df = pd.read_excel(excel_path, sheet_name=0, header=None)
+        
+        period_stats = []
+        team_advanced_stats = {}
+        
+        # Première passe : identifier les blocs d'équipes
+        # On cherche les lignes "Totaux" et on regarde si le bloc contient des joueuses CSMF
+        team_blocks = []  # [(start_idx, end_idx, team_name), ...]
+        
+        totaux_indices = []
+        for idx, row in df.iterrows():
+            first_cell = str(row[0]) if pd.notna(row[0]) else ''
+            if first_cell == 'Totaux':
+                totaux_indices.append(idx)
+        
+        # Pour chaque bloc entre les Totaux, déterminer l'équipe
+        prev_idx = 0
+        for totaux_idx in totaux_indices:
+            # Chercher si ce bloc contient des joueuses CSMF
+            is_csmf = False
+            for check_idx in range(prev_idx, totaux_idx):
+                player_name = str(df.iloc[check_idx, 1]) if pd.notna(df.iloc[check_idx, 1]) else ''
+                player_upper = player_name.upper()
+                for csmf_player in CSMF_PLAYERS:
+                    if csmf_player in player_upper:
+                        is_csmf = True
+                        break
+                if is_csmf:
+                    break
+            
+            team_name = 'CSMF PARIS' if is_csmf else 'ADVERSAIRE'
+            team_blocks.append((prev_idx, totaux_idx, team_name))
+            print(f"  Bloc {prev_idx}-{totaux_idx}: {team_name}")
+            prev_idx = totaux_idx + 1
+        
+        # Deuxième passe : extraire les stats par période
+        current_team = None
+        for idx, row in df.iterrows():
+            first_cell = str(row[0]) if pd.notna(row[0]) else ''
+            
+            # Déterminer l'équipe courante basé sur les blocs
+            for start, end, team in team_blocks:
+                if start <= idx <= end + 10:  # +10 pour inclure les lignes de période après Totaux
+                    current_team = team
+                    break
+            
+            # Détecter les lignes de période
+            if first_cell.startswith('Periode') or first_cell.startswith('Période'):
+                try:
+                    periode_match = re.search(r'P[eé]riode\s*(\d+)', first_cell)
+                    if periode_match:
+                        periode_num = int(periode_match.group(1))
+                        
+                        period_data = {
+                            'equipe': current_team or 'UNKNOWN',
+                            'periode': periode_num,
+                            'points': int(float(row[3])) if pd.notna(row[3]) else 0,
+                            'rebonds_offensifs': int(float(row[16])) if len(row) > 16 and pd.notna(row[16]) else 0,
+                            'rebonds_defensifs': int(float(row[17])) if len(row) > 17 and pd.notna(row[17]) else 0,
+                            'rebonds_total': int(float(row[18])) if len(row) > 18 and pd.notna(row[18]) else 0,
+                            'passes_decisives': int(float(row[19])) if len(row) > 19 and pd.notna(row[19]) else 0,
+                            'interceptions': int(float(row[21])) if len(row) > 21 and pd.notna(row[21]) else 0,
+                            'balles_perdues': int(float(row[23])) if len(row) > 23 and pd.notna(row[23]) else 0,
+                        }
+                        
+                        period_stats.append(period_data)
+                        print(f"  {current_team} Q{periode_num}: {period_data['points']} pts")
+                except Exception as e:
+                    print(f"  Erreur période: {e}")
+            
+            # Détecter stats avancées (elles sont dans les colonnes à droite)
+            col34 = str(row[34]) if len(row) > 34 and pd.notna(row[34]) else ''
+            col38 = row[38] if len(row) > 38 and pd.notna(row[38]) else None
+            
+            if 'Points de Balles Perdues' in col34 and col38:
+                try: team_advanced_stats['points_balles_perdues'] = int(float(col38))
+                except: pass
+            if 'Points dans la raquette' in col34 and col38:
+                try: team_advanced_stats['points_raquette'] = int(float(col38))
+                except: pass
+            if 'contre-attaque' in col34.lower() and col38:
+                try: team_advanced_stats['points_contre_attaque'] = int(float(col38))
+                except: pass
+            if 'chance' in col34.lower() and col38:
+                try: team_advanced_stats['points_2eme_chance'] = int(float(col38))
+                except: pass
+        
+        print(f"\nStats periodes extraites: {len(period_stats)}")
+        for p in period_stats:
+            print(f"  - {p['equipe']} Q{p['periode']}: {p['points']} pts")
+        
+        result = {
+            'period_stats': period_stats,
+            'team_advanced_stats': team_advanced_stats,
+            'has_boxscore_detaillee': True
+        }
+        
+        if existing_data:
+            existing_data['period_stats'] = period_stats
+            existing_data['team_advanced_stats'] = team_advanced_stats
+            existing_data['has_boxscore_detaillee'] = True
+            return existing_data
+        
+        return result
+        
+    except Exception as e:
+        print(f"Erreur extraction Excel: {e}")
+        return existing_data
+
 def extract_analyse_5_en_jeu(pdf_path, existing_data=None):
     """Extrait les combinaisons de 5 joueurs depuis l'Analyse des 5 en jeu"""
     print(f"📄 Extraction Analyse des 5 en jeu: {pdf_path}")
@@ -608,6 +781,10 @@ def extract_analyse_5_en_jeu(pdf_path, existing_data=None):
                     # Parser pts/min (format français avec virgule)
                     try:
                         pts_min = float(pts_min_str.replace(',', '.'))
+                        # Protection contre NaN et Inf
+                        import math
+                        if math.isnan(pts_min) or math.isinf(pts_min):
+                            pts_min = 0.0
                     except:
                         pts_min = 0.0
                     
@@ -647,6 +824,223 @@ def extract_analyse_5_en_jeu(pdf_path, existing_data=None):
     
     return result
 
+
+def extract_stats_detaillees(pdf_path, existing_data=None):
+    """
+    Extrait les données du fichier Statistiques_détaillées
+    Contient des stats avancées non présentes dans le FIBA Box Score :
+    - Tirs 2pts Intérieur vs Extérieur par joueuse
+    - Ratios PB/BP, IN/BP, F/FPR par équipe
+    - Stats 5 de départ vs Banc
+    - Stats par mi-temps
+    - Avantage max, Séries, Changements de leader
+    """
+    print(f"📄 Extraction Statistiques Détaillées: {pdf_path}")
+    
+    result = existing_data if existing_data else {
+        'match_info': {},
+        'player_stats': [],
+        'team_stats': [],
+        'advanced_stats': {},
+        'period_stats': [],
+        'lineup_stats': []
+    }
+    
+    with pdfplumber.open(pdf_path) as pdf:
+        if len(pdf.pages) == 0:
+            return result
+        
+        page = pdf.pages[0]
+        tables = page.extract_tables()
+        text = page.extract_text() or ""
+        
+        # Détecter les équipes depuis le texte (format: EQUIPE1 - EQUIPE2 XX-XX)
+        match_info = re.search(r'([A-Z][A-Z\s\-\']+)\s+-\s+([A-Z][A-Z\s\-\']+)\s+(\d+)-(\d+)', text)
+        equipe1 = None
+        equipe2 = None
+        if match_info:
+            equipe1 = match_info.group(1).strip()
+            equipe2 = match_info.group(2).strip()
+        
+        # Trouver quelle équipe est CSMF
+        is_csmf_equipe1 = equipe1 and 'CSMF' in equipe1.upper()
+        is_csmf_equipe2 = equipe2 and 'CSMF' in equipe2.upper()
+        
+        # Extraire les stats avancées - on cherche TOUTES les occurrences
+        advanced = {}
+        
+        # Points dans la raquette (2 valeurs: équipe1, équipe2)
+        matches = re.findall(r'Points dans la raquette\s+(\d+)', text)
+        if len(matches) >= 2:
+            # Première valeur = équipe1, deuxième = équipe2
+            if is_csmf_equipe2:
+                advanced['points_raquette'] = int(matches[1])  # CSMF est équipe2
+            else:
+                advanced['points_raquette'] = int(matches[0])  # CSMF est équipe1 ou par défaut
+        elif len(matches) == 1:
+            advanced['points_raquette'] = int(matches[0])
+        
+        # Points en contre-attaque
+        matches = re.findall(r'Pts en contre-attaque\s+(\d+)', text)
+        if len(matches) >= 2:
+            advanced['points_contre_attaque'] = int(matches[1]) if is_csmf_equipe2 else int(matches[0])
+        elif len(matches) == 1:
+            advanced['points_contre_attaque'] = int(matches[0])
+        
+        # Points sur 2ème chance
+        matches = re.findall(r'Points sur 2ème chance\s+(\d+)', text)
+        if len(matches) >= 2:
+            advanced['points_2eme_chance'] = int(matches[1]) if is_csmf_equipe2 else int(matches[0])
+        elif len(matches) == 1:
+            advanced['points_2eme_chance'] = int(matches[0])
+        
+        # Avantage Maximum
+        matches = re.findall(r'Avantage Maximum\s+(\d+)', text)
+        if len(matches) >= 2:
+            advanced['avantage_max'] = int(matches[1]) if is_csmf_equipe2 else int(matches[0])
+        elif len(matches) == 1:
+            advanced['avantage_max'] = int(matches[0])
+        
+        # Série Maximum
+        matches = re.findall(r'Série Maximum\s+(\d+-\d+)', text)
+        if len(matches) >= 2:
+            advanced['serie_max'] = matches[1] if is_csmf_equipe2 else matches[0]
+        elif len(matches) == 1:
+            advanced['serie_max'] = matches[0]
+        
+        # Égalités (valeur unique, partagée)
+        match = re.search(r'Egalités\s+(\d+)', text)
+        if match:
+            advanced['egalites'] = int(match.group(1))
+        
+        # Changements de Leader (valeur unique, partagée)
+        match = re.search(r'Changements de Leader\s+(\d+)', text)
+        if match:
+            advanced['changements_leader'] = int(match.group(1))
+        
+        # % Rebonds (prendre les valeurs CSMF)
+        matches = re.findall(r'% Rebonds Offensifs\s+(\d+)%', text)
+        if len(matches) >= 2:
+            advanced['pct_rebonds_off'] = int(matches[1]) if is_csmf_equipe2 else int(matches[0])
+        elif len(matches) == 1:
+            advanced['pct_rebonds_off'] = int(matches[0])
+            
+        matches = re.findall(r'% Rebonds Défensifs\s+(\d+)%', text)
+        if len(matches) >= 2:
+            advanced['pct_rebonds_def'] = int(matches[1]) if is_csmf_equipe2 else int(matches[0])
+        elif len(matches) == 1:
+            advanced['pct_rebonds_def'] = int(matches[0])
+            
+        matches = re.findall(r'% Rebond Total\s+(\d+)%', text)
+        if len(matches) >= 2:
+            advanced['pct_rebonds_total'] = int(matches[1]) if is_csmf_equipe2 else int(matches[0])
+        elif len(matches) == 1:
+            advanced['pct_rebonds_total'] = int(matches[0])
+        
+        # Parser les tables pour les stats joueuses avec tirs int/ext
+        player_stats_detailed = []
+        csmf_cinq_depart = None
+        csmf_banc = None
+        
+        for table in tables:
+            if not table or len(table) < 3:
+                continue
+            
+            # Détecter si c'est une table de stats joueuses (contient "Min", "PTS", etc.)
+            header_row = table[0] if table else []
+            second_row = table[1] if len(table) > 1 else []
+            
+            # Chercher les indices des colonnes
+            header_str = ' '.join([str(c) for c in header_row + second_row if c])
+            
+            if '2 pts Ext' in header_str or '2 pts Int' in header_str:
+                # C'est une table de stats détaillées joueuses
+                equipe = None
+                is_csmf_table = False
+                for cell in header_row:
+                    cell_str = str(cell).upper() if cell else ''
+                    if 'CSMF' in cell_str or 'PARIS' in cell_str:
+                        equipe = str(cell).strip()
+                        is_csmf_table = True
+                        break
+                    elif cell and len(cell_str) > 3:
+                        equipe = str(cell).strip()
+                
+                # Parser chaque ligne de joueuse
+                for row in table[2:]:  # Skip header rows
+                    if not row or len(row) < 20:
+                        continue
+                    
+                    # Vérifier si c'est une ligne de joueuse (commence par numéro ou *numéro)
+                    first_cell = str(row[0] or '').strip()
+                    if not first_cell or first_cell in ['Equipe/Coach', 'Totaux', '5 de Départ', 'Banc']:
+                        # Lignes spéciales - on ne prend que celles de CSMF
+                        if is_csmf_table:
+                            if '5 de Départ' in first_cell or (row[1] and '5 de Départ' in str(row[1])):
+                                # Stats du 5 de départ CSMF
+                                csmf_cinq_depart = {
+                                    'points': _safe_int(row[3]) if len(row) > 3 else 0,
+                                    'tirs': row[4] if len(row) > 4 else '0/0',
+                                }
+                            elif 'Banc' in first_cell or (row[1] and 'Banc' in str(row[1])):
+                                # Stats du banc CSMF
+                                csmf_banc = {
+                                    'points': _safe_int(row[3]) if len(row) > 3 else 0,
+                                    'tirs': row[4] if len(row) > 4 else '0/0',
+                                }
+                        continue
+                    
+                    # C'est une joueuse
+                    try:
+                        # Format: [num, nom, min, pts, tirs_tot, %, 3pts, %, 2pts_ext, %, 2pts_int, %, du, lf, %, ...]
+                        numero = first_cell.replace('*', '')
+                        nom = str(row[1] or '').strip()
+                        
+                        if not nom or nom == 'None':
+                            continue
+                        
+                        player_data = {
+                            'numero': numero,
+                            'nom': nom,
+                            'equipe': equipe,
+                            'starter': '*' in first_cell,
+                            'tirs_2pts_ext': row[8] if len(row) > 8 else '0/0',
+                            'tirs_2pts_int': row[10] if len(row) > 10 else '0/0',
+                            'dunks': _safe_int(row[12]) if len(row) > 12 else 0,
+                        }
+                        player_stats_detailed.append(player_data)
+                        print(f"  ✓ {nom}: 2pts Ext={player_data['tirs_2pts_ext']}, 2pts Int={player_data['tirs_2pts_int']}")
+                    except Exception as e:
+                        continue
+        
+        # Ajouter les stats 5 de départ et banc CSMF
+        if csmf_cinq_depart:
+            advanced['cinq_depart'] = csmf_cinq_depart
+        if csmf_banc:
+            advanced['banc'] = csmf_banc
+        
+        # Stocker les résultats
+        result['stats_detaillees'] = {
+            'advanced': advanced,
+            'player_details': player_stats_detailed
+        }
+        
+        print(f"📊 Stats avancées extraites: {list(advanced.keys())}")
+        print(f"📊 Joueuses avec détail tirs: {len(player_stats_detailed)}")
+    
+    return result
+
+
+def _safe_int(val):
+    """Convertit en int de manière sécurisée"""
+    if val is None:
+        return 0
+    try:
+        return int(str(val).strip())
+    except:
+        return 0
+
+
 def extract_from_pdf(pdf_path):
     """Fonction principale d'extraction - détecte automatiquement le type de PDF"""
     pdf_path = Path(pdf_path)
@@ -657,8 +1051,10 @@ def extract_from_pdf(pdf_path):
     
     with pdfplumber.open(pdf_path) as pdf:
         full_text = ""
-        for page in pdf.pages:
-            full_text += page.extract_text() + "\n"
+        for page in pdf.pages[:2]:  # Lire seulement les 2 premières pages pour la détection
+            page_text = page.extract_text()
+            if page_text:
+                full_text += page_text + "\n"
     
     pdf_type = detect_pdf_type(full_text, pdf_path.name)
     print(f"📋 Type détecté: {pdf_type}")
@@ -669,10 +1065,17 @@ def extract_from_pdf(pdf_path):
         return extract_boxscore_detaillee(pdf_path)
     elif pdf_type == 'ANALYSE_5':
         return extract_analyse_5_en_jeu(pdf_path)
-    elif pdf_type == 'STATS_DETAILLEE':
-        # Format différent - utiliser FIBA si disponible
-        print("⚠️ Format Statistiques_détaillée détecté - préférer FIBA_Box_Score")
-        return extract_fiba_box_score(pdf_path)
+    elif pdf_type == 'STATS_DETAILLEES':
+        return extract_stats_detaillees(pdf_path)
+    elif pdf_type == 'EVALUATION_JOUEUSE':
+        # Pour l'instant, retourner le type pour traitement spécial (extraction tirs)
+        return {'pdf_type': 'EVALUATION_JOUEUSE', 'path': str(pdf_path)}
+    elif pdf_type in ['ZONES_TIRS', 'POSITION_TIRS']:
+        print(f"⏭️ Type {pdf_type} ignoré (visuel uniquement)")
+        return {'pdf_type': pdf_type, 'path': str(pdf_path), 'ignored': True}
+    elif pdf_type == 'UNKNOWN':
+        print(f"⚠️ Type de fichier non reconnu: {pdf_path.name}")
+        return {'pdf_type': 'UNKNOWN', 'path': str(pdf_path), 'error': 'Type non reconnu'}
     
     return extract_fiba_box_score(pdf_path)
 
